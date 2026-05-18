@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       {
         cookies: {
           getAll() { return cookieStore.getAll(); },
-          setAll(toSet) {
+          setAll(toSet: { name: string; value: string; options: CookieOptions }[]) {
             try { toSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {}
           },
         },
@@ -26,6 +26,5 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
-
-  return NextResponse.redirect(`${origin}/login?error=auth_callback`);
+  return NextResponse.redirect(`${origin}/login?error=auth`);
 }
