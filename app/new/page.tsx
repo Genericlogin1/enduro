@@ -11,9 +11,12 @@ export default async function NewPostPage() {
   if (!user) redirect('/login');
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
-      <header className="sticky top-0 z-10 bg-zinc-950 border-b border-zinc-900 px-4 py-3">
-        <h1 className="text-lg font-bold">New post</h1>
+    <div className="min-h-screen pb-24">
+      <header className="sticky top-0 z-10 bg-base/95 backdrop-blur border-b border-line px-4 py-3">
+        <div className="max-w-xl mx-auto">
+          <h1 className="font-display text-2xl leading-none">New post</h1>
+          <p className="text-[11px] text-muted mt-0.5">Share what you rode today</p>
+        </div>
       </header>
       <main className="max-w-xl mx-auto px-4 py-4">
         <PostForm userId={user.id} />
