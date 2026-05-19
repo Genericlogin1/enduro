@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -41,21 +40,20 @@ export default function PostCard({
     setLiked(next);
     setCount(c => c + (next ? 1 : -1));
     startTransition(async () => {
-      try { await toggleLikeAction(post.id); } catch { setLiked(!next); setCount(c => c + (next ? -1 : 1)); }
+      try { await toggleLikeAction(post.id); }
+      catch { setLiked(!next); setCount(c => c + (next ? -1 : 1)); }
     });
   }
 
   return (
-    <article className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <article className="card overflow-hidden">
       <header className="flex items-center gap-3 px-4 py-3">
-        {avatar ? (
-          <img src={avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-semibold">{initials}</div>
-        )}
+        {avatar
+          ? <img src={avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+          : <div className="w-10 h-10 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center font-semibold">{initials}</div>}
         <div className="flex-1 min-w-0">
           <div className="font-semibold truncate">{author}</div>
-          <div className="text-xs text-zinc-500 truncate">
+          <div className="text-xs text-muted truncate">
             {handle && <span>{handle} · </span>}
             {post.location && <span>{post.location} · </span>}
             <span>{time}</span>
@@ -65,29 +63,33 @@ export default function PostCard({
 
       {post.media_urls && post.media_urls.length > 0 && (
         <div className="grid grid-cols-1 gap-1 bg-black">
-          {post.media_urls.slice(0, 3).map((url, i) => (
+          {post.media_urls.slice(0, 3).map((url, i) =>
             url.match(/\.(mp4|webm|mov)$/i)
               ? <video key={i} src={url} controls className="w-full max-h-96 object-cover" />
               : <img key={i} src={url} alt="" className="w-full max-h-96 object-cover" />
-          ))}
+          )}
         </div>
       )}
 
       {post.content && (
-        <p className="px-4 py-3 whitespace-pre-wrap text-sm text-zinc-200">{post.content}</p>
+        <p className="px-4 py-3 whitespace-pre-wrap text-sm text-ink/90">{post.content}</p>
       )}
 
-      <footer className="flex items-center gap-4 px-4 py-3 border-t border-zinc-800 text-sm">
+      <footer className="flex items-center gap-5 px-4 py-3 border-t border-line text-sm">
         <button
           onClick={handleLike}
           disabled={pending || !currentUserId}
-          className={'flex items-center gap-1 transition ' + (liked ? 'text-orange-400' : 'text-zinc-400 hover:text-zinc-200') + (pending ? ' opacity-60' : '')}
+          className={'flex items-center gap-1.5 transition ' + (liked ? 'text-rust-strong' : 'text-muted hover:text-ink')}
         >
-          <span>{liked ? '❤️' : '🤍'}</span>
+          <svg viewBox="0 0 20 20" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" className="w-5 h-5">
+            <path strokeWidth="1.6" d="M10 17s-6-3.6-6-8.2A3.8 3.8 0 0110 4a3.8 3.8 0 016 4.8C16 13.4 10 17 10 17z" />
+          </svg>
           <span>{count}</span>
         </button>
-        <div className="flex items-center gap-1 text-zinc-400">
-          <span>💬</span>
+        <div className="flex items-center gap-1.5 text-muted">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" className="w-5 h-5">
+            <path strokeWidth="1.6" d="M4 6a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H9l-4 3v-3a2 2 0 01-1-1.7V6z" />
+          </svg>
           <span>{post.comments.length}</span>
         </div>
       </footer>

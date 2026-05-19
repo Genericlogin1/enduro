@@ -1,18 +1,16 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
+import { GeistSans } from 'geist/font/sans';
 
 export const metadata: Metadata = {
   title: 'Enduro World',
-  description: 'Global Enduro Community – share rides, plan routes, find tours.',
+  description: 'Global Enduro Community — share rides, plan routes, find tours.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={inter.className + ' bg-zinc-950 text-zinc-100 antialiased'}>
+      <body className={GeistSans.className + ' bg-base text-ink antialiased min-h-screen'}>
         {children}
       </body>
     </html>
