@@ -37,23 +37,38 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-bold text-center">NEW PASSWORD</h1>
-        <p className="text-center text-zinc-400 text-sm">Pick something you will remember this time.</p>
-        {done && <div className="bg-emerald-900/30 border border-emerald-700 text-emerald-200 text-sm px-3 py-2 rounded">Password updated. Redirecting…</div>}
-        {error && <div className="bg-red-900/40 border border-red-700 text-red-200 text-sm px-3 py-2 rounded">{error}</div>}
-        <input type="password" required placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-50" disabled={!ready || done} />
-        <input type="password" required placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-50" disabled={!ready || done} />
-        <button type="submit" disabled={loading || !ready || done}
-          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2 rounded">
-          {loading ? 'Saving…' : 'Update password'}
+    <main className="min-h-screen flex items-center justify-center px-4 py-10">
+      <form onSubmit={handleSubmit} className="card p-7 w-full max-w-sm space-y-4">
+        <div className="text-center space-y-1">
+          <h1 className="font-display text-3xl text-ink">NEW PASSWORD</h1>
+          <p className="text-xs text-muted uppercase tracking-wider">Pick something you will remember</p>
+        </div>
+        {done && <div className="border border-accent-strong/40 bg-accent/10 text-ink/90 text-sm px-3 py-3 rounded-md text-center">Password updated. Redirecting...</div>}
+        {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
+        <input
+          type="password"
+          required
+          placeholder="New password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="input"
+          disabled={!ready || done}
+        />
+        <input
+          type="password"
+          required
+          placeholder="Confirm new password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          className="input"
+          disabled={!ready || done}
+        />
+        <button type="submit" disabled={loading || !ready || done} className="btn btn-primary w-full disabled:opacity-60">
+          {loading ? 'Saving...' : 'Update password'}
         </button>
         <div className="flex items-center justify-between text-sm">
-          <Link href="/forgot-password" className="text-zinc-400 hover:underline">Request a new link</Link>
-          <Link href="/" className="text-zinc-400 hover:underline">Back to feed</Link>
+          <Link href="/forgot-password" className="text-muted hover:text-moss-strong hover:underline">Request a new link</Link>
+          <Link href="/" className="text-muted hover:text-ink hover:underline">Back to feed</Link>
         </div>
       </form>
     </main>
