@@ -38,7 +38,11 @@ export default async function FeedPage() {
             <h1 className="font-display text-3xl leading-none text-ink">ENDURO WORLD</h1>
             <p className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">Global Enduro Community</p>
           </div>
-          <Link href="/new" className="btn btn-secondary text-xs">+ Post</Link>
+          {user ? (
+            <Link href="/new" className="btn btn-secondary text-xs">+ Post</Link>
+          ) : (
+            <Link href="/login" className="btn btn-primary text-xs">Sign in</Link>
+          )}
         </div>
       </header>
 
@@ -47,7 +51,9 @@ export default async function FeedPage() {
           <div className="text-center py-16 text-muted">
             <p className="text-lg mb-2">The trail is quiet</p>
             <p className="text-sm">Be the first to share your ride.</p>
-            <Link href="/new" className="btn btn-primary mt-4">Create post</Link>
+            <Link href={user ? '/new' : '/login'} className="btn btn-primary mt-4">
+              {user ? 'Create post' : 'Sign in to post'}
+            </Link>
           </div>
         ) : (
           feed.map((item, idx) =>
