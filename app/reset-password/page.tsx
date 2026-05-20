@@ -14,7 +14,6 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Wait until Supabase has the recovery session loaded (it does so automatically when the user lands here from the email link via /auth/callback).
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
@@ -38,44 +37,23 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 card p-6">
-        <div className="text-center space-y-1">
-          <h1 className="font-display text-3xl">NEW PASSWORD</h1>
-          <p className="text-muted text-sm">Pick something you will remember this time.</p>
-        </div>
-
-        {done && (
-          <div className="chip chip-accent w-full justify-center">Password updated. Redirecting…</div>
-        )}
-        {error && (
-          <div className="chip chip-rust w-full justify-center">{error}</div>
-        )}
-
-        <input
-          type="password"
-          required
-          placeholder="New password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="input"
-          disabled={!ready || done}
-        />
-        <input
-          type="password"
-          required
-          placeholder="Confirm new password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          className="input"
-          disabled={!ready || done}
-        />
-        <button type="submit" disabled={loading || !ready || done} className="btn btn-primary w-full">
+    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+        <h1 className="text-2xl font-bold text-center">NEW PASSWORD</h1>
+        <p className="text-center text-zinc-400 text-sm">Pick something you will remember this time.</p>
+        {done && <div className="bg-emerald-900/30 border border-emerald-700 text-emerald-200 text-sm px-3 py-2 rounded">Password updated. Redirecting…</div>}
+        {error && <div className="bg-red-900/40 border border-red-700 text-red-200 text-sm px-3 py-2 rounded">{error}</div>}
+        <input type="password" required placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-50" disabled={!ready || done} />
+        <input type="password" required placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-50" disabled={!ready || done} />
+        <button type="submit" disabled={loading || !ready || done}
+          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2 rounded">
           {loading ? 'Saving…' : 'Update password'}
         </button>
-        <div className="flex items-center justify-between text-sm pt-1">
-          <Link href="/forgot-password" className="text-muted hover:text-ink">Request a new link</Link>
-          <Link href="/" className="text-muted hover:text-ink">Back to feed</Link>
+        <div className="flex items-center justify-between text-sm">
+          <Link href="/forgot-password" className="text-zinc-400 hover:underline">Request a new link</Link>
+          <Link href="/" className="text-zinc-400 hover:underline">Back to feed</Link>
         </div>
       </form>
     </main>
