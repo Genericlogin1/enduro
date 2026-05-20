@@ -28,25 +28,38 @@ function LoginForm() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-bold text-center">ENDURO WORLD</h1>
-        <p className="text-center text-zinc-400 text-sm">Sign in to continue</p>
-        {error && <div className="bg-red-900/40 border border-red-700 text-red-200 text-sm px-3 py-2 rounded">{error}</div>}
-        <input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500" />
-        <input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500" />
-        <button type="submit" disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2 rounded">
-          {loading ? 'Signing in…' : 'Sign in'}
+    <main className="min-h-screen flex items-center justify-center px-4 py-10">
+      <form onSubmit={handleSubmit} className="card p-7 w-full max-w-sm space-y-4">
+        <div className="text-center space-y-1">
+          <h1 className="font-display text-3xl text-ink">ENDURO WORLD</h1>
+          <p className="text-xs text-muted uppercase tracking-wider">Sign in to continue</p>
+        </div>
+        {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
+        <input
+          type="email"
+          required
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="input"
+        />
+        <input
+          type="password"
+          required
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="input"
+        />
+        <button type="submit" disabled={loading} className="btn btn-primary w-full disabled:opacity-60">
+          {loading ? 'Signing in...' : 'Sign in'}
         </button>
         <div className="flex items-center justify-between text-sm">
-          <Link href="/forgot-password" className="text-zinc-400 hover:underline">Forgot password?</Link>
-          <Link href="/" className="text-zinc-400 hover:underline">Back to feed</Link>
+          <Link href="/forgot-password" className="text-muted hover:text-moss-strong hover:underline">Forgot password?</Link>
+          <Link href="/" className="text-muted hover:text-ink hover:underline">Back to feed</Link>
         </div>
-        <p className="text-center text-sm text-zinc-400">
-          No account? <Link href="/signup" className="text-orange-400 hover:underline">Sign up</Link>
+        <p className="text-center text-sm text-muted">
+          No account? <Link href="/signup" className="text-moss-strong hover:underline">Sign up</Link>
         </p>
       </form>
     </main>
@@ -55,7 +68,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100">Loading…</main>}>
+    <Suspense fallback={<main className="min-h-screen flex items-center justify-center text-muted">Loading...</main>}>
       <LoginForm />
     </Suspense>
   );

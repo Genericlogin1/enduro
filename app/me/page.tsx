@@ -4,14 +4,46 @@ import PostCard from '@/components/PostCard';
 import RoutePreview from '@/components/RoutePreview';
 import { createClient } from '@/lib/supabase/server';
 import { toggleLike } from '@/app/actions';
-import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function MePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
+
+  if (!user) {
+    return (
+      <div className="min-h-screen pb-24">
+        <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
+          <div className="max-w-xl mx-auto px-4 py-3 flex items-end justify-between">
+            <div>
+              <h1 className="font-display text-3xl leading-none text-ink">ME</h1>
+              <p className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">Your trail journal</p>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-xl mx-auto px-4 py-10">
+          <div className="card p-8 text-center space-y-3">
+            <div className="text-5xl">🏕️</div>
+            <h2 className="font-display text-2xl text-ink">Camp not set up yet</h2>
+            <p className="text-sm text-muted max-w-sm mx-auto">
+              Sign in to save your routes, post rides and keep your trail journal in one place.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-3">
+              <Link href="/login?next=/me" className="btn btn-primary">Sign in</Link>
+              <Link href="/signup" className="btn btn-ghost">Create account</Link>
+            </div>
+            <p className="text-xs text-muted pt-2">
+              Forgot your password? <Link href="/forgot-password" className="text-moss-strong hover:underline">Reset it here</Link>.
+            </p>
+          </div>
+        </main>
+
+        <Nav active="me" />
+      </div>
+    );
+  }
 
   const { data: profile } = await supabase
     .from('profiles')
