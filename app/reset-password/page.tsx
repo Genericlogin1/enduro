@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
           <h1 className="font-display text-3xl text-ink">NEW PASSWORD</h1>
           <p className="text-xs text-muted uppercase tracking-wider">Pick something you will remember</p>
         </div>
-        {done && <div className="border border-accent-strong/40 bg-accent/10 text-ink/90 text-sm px-3 py-3 rounded-md text-center">Password updated. Redirecting...</div>}
+        {done && <div className="border border-moss-strong/40 bg-moss/10 text-ink/90 text-sm px-3 py-3 rounded-md text-center">Password updated. Redirecting...</div>}
         {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
         <input
           type="password"
