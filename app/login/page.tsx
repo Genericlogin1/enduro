@@ -23,26 +23,52 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) { setError(error.message); return; }
-    router.push('/');
+    const next = params.get('next') || '/';
+    router.push(next);
     router.refresh();
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-bold text-center">ENDURO WORLD</h1>
-        <p className="text-center text-zinc-400 text-sm">Sign in to continue</p>
-        {error && <div className="bg-red-900/40 border border-red-700 text-red-200 text-sm px-3 py-2 rounded">{error}</div>}
-        <input type="email" required placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500" />
-        <input type="password" required placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500" />
-        <button type="submit" disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2 rounded">
-          {loading ? 'Signing in...' : 'Sign in'}
+    <main className="min-h-screen flex items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 card p-6">
+        <div className="text-center space-y-1">
+          <h1 className="font-display text-3xl">ENDURO WORLD</h1>
+          <p className="text-muted text-sm">Sign in to continue</p>
+        </div>
+        {error && <div className="chip chip-rust w-full justify-center">{error}</div>}
+        <input
+          type="email"
+          required
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="input"
+        />
+        <input
+          type="password"
+          required
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="input"
+        />
+        <button type="submit" disabled={loading} className="btn btn-primary w-full">
+          {loading ? 'Signing in…' : 'Sign in'}
         </button>
-        <p className="text-center text-sm text-zinc-400">
-          No account? <Link href="/signup" className="text-orange-400 hover:underline">Sign up</Link>
+        <div className="flex items-center justify-between text-sm pt-1">
+          <Link href="/forgot-password" className="text-muted hover:text-ink">
+            Forgot password?
+          </Link>
+          <Link href="/" className="text-muted hover:text-ink">
+            ← Back to feed
+          </Link>
+        </div>
+        <div className="divider-trail" />
+        <p className="text-center text-sm text-muted">
+          No account?{' '}
+          <Link href="/signup" className="text-ink underline">
+            Sign up
+          </Link>
         </p>
       </form>
     </main>
@@ -51,7 +77,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100">Loading...</main>}>
+    <Suspense fallback={<main className="min-h-screen flex items-center justify-center">Loading…</main>}>
       <LoginForm />
     </Suspense>
   );
