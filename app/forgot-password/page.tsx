@@ -23,30 +23,37 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-bold text-center">RESET PASSWORD</h1>
-        <p className="text-center text-zinc-400 text-sm">We will email you a secure link to set a new password.</p>
+    <main className="min-h-screen flex items-center justify-center px-4 py-10">
+      <form onSubmit={handleSubmit} className="card p-7 w-full max-w-sm space-y-4">
+        <div className="text-center space-y-1">
+          <h1 className="font-display text-3xl text-ink">RESET PASSWORD</h1>
+          <p className="text-xs text-muted uppercase tracking-wider">We will email you a secure link</p>
+        </div>
         {sent ? (
           <div className="space-y-3 text-center">
-            <div className="bg-emerald-900/30 border border-emerald-700 text-emerald-200 text-sm px-3 py-2 rounded">
+            <div className="border border-accent-strong/40 bg-accent/10 text-ink/90 text-sm px-3 py-3 rounded-md">
               Check your inbox — reset link sent.
             </div>
-            <p className="text-sm text-zinc-400">Did not get it? Look in spam, or try again in a minute.</p>
-            <Link href="/login" className="inline-block w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-medium py-2 rounded">Back to sign in</Link>
+            <p className="text-sm text-muted">Did not get it? Look in spam, or try again in a minute.</p>
+            <Link href="/login" className="btn btn-ghost w-full">Back to sign in</Link>
           </div>
         ) : (
           <>
-            {error && <div className="bg-red-900/40 border border-red-700 text-red-200 text-sm px-3 py-2 rounded">{error}</div>}
-            <input type="email" required placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500" />
-            <button type="submit" disabled={loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2 rounded">
-              {loading ? 'Sending…' : 'Send reset link'}
+            {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
+            <input
+              type="email"
+              required
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input"
+            />
+            <button type="submit" disabled={loading} className="btn btn-primary w-full disabled:opacity-60">
+              {loading ? 'Sending...' : 'Send reset link'}
             </button>
             <div className="flex items-center justify-between text-sm">
-              <Link href="/login" className="text-zinc-400 hover:underline">← Sign in</Link>
-              <Link href="/" className="text-zinc-400 hover:underline">Back to feed</Link>
+              <Link href="/login" className="text-muted hover:text-moss-strong hover:underline">← Sign in</Link>
+              <Link href="/" className="text-muted hover:text-ink hover:underline">Back to feed</Link>
             </div>
           </>
         )}
