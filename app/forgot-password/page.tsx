@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
         </div>
         {sent ? (
           <div className="space-y-3 text-center">
-            <div className="border border-accent-strong/40 bg-accent/10 text-ink/90 text-sm px-3 py-3 rounded-md">
+            <div className="border border-moss-strong/40 bg-moss/10 text-ink/90 text-sm px-3 py-3 rounded-md">
               Check your inbox — reset link sent.
             </div>
             <p className="text-sm text-muted">Did not get it? Look in spam, or try again in a minute.</p>
