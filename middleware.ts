@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-const PUBLIC_PATHS = ['/login', '/signup', '/auth/callback', '/check-email'];
+// Routes that REQUIRE authentication. Everything else is publicly viewable.
+const PROTECTED_PATHS = ['/me', '/new'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -23,11 +24,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + '/'));
+  const isProtected = PROTECTED_PATHS.some((p) => path === p || path.startsWith(p + '/'));
 
-  if (!user && !isPublic) {
+  if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
+    url.searchParams.set('next', path);
+    return NextResponse.redirect(url);
+  }
+
+  if (user && (path === '/login' || path === '/signup' || path === '/forgot-password')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    url.search = '';
     return NextResponse.redirect(url);
   }
 

@@ -1,0 +1,61 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+
+export default function ResetPasswordPage() {
+  const router = useRouter();
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setReady(true);
+      else setError('This reset link is invalid or has expired. Request a new one.');
+    });
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (password !== confirm) { setError('Passwords do not match.'); return; }
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    setDone(true);
+    setTimeout(() => router.push('/'), 1500);
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-zinc-100 px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+        <h1 className="text-2xl font-bold text-center">NEW PASSWORD</h1>
+        <p className="text-center text-zinc-400 text-sm">Pick something you will remember this time.</p>
+        {done && <div className="bg-emerald-900/30 border border-emerald-700 text-emerald-200 text-sm px-3 py-2 rounded">Password updated. Redirecting…</div>}
+        {error && <div className="bg-red-900/40 border border-red-700 text-red-200 text-sm px-3 py-2 rounded">{error}</div>}
+        <input type="password" required placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-50" disabled={!ready || done} />
+        <input type="password" required placeholder="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded px-3 py-2 focus:outline-none focus:border-orange-500 disabled:opacity-50" disabled={!ready || done} />
+        <button type="submit" disabled={loading || !ready || done}
+          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-medium py-2 rounded">
+          {loading ? 'Saving…' : 'Update password'}
+        </button>
+        <div className="flex items-center justify-between text-sm">
+          <Link href="/forgot-password" className="text-zinc-400 hover:underline">Request a new link</Link>
+          <Link href="/" className="text-zinc-400 hover:underline">Back to feed</Link>
+        </div>
+      </form>
+    </main>
+  );
+}
