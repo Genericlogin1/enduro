@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: enduro-api
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_ENV=development
+      - HTTP_PORT=8080
+      - DATABASE_URL=postgres://enduro:enduro_secret@postgres:5432/enduro_db?sslmode=disable
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_ACCESS_TTL=15m
+      - LOG_LEVEL=info
+      - SHUTDOWN_TIMEOUT=30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - enduro-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: enduro-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=enduro
+      - POSTGRES_PASSWORD=enduro_secret
+      - POSTGRES_DB=enduro_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enduro -d enduro_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - enduro-network
+
+  migrate:
+    image: migrate/migrate:latest
+    container_name: enduro-migrate
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://enduro:enduro_secret@postgres:5432/enduro_db?sslmode=disable",
+        "up"
+      ]
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - enduro-network
+
+volumes:
+  postgres_data:
+
+networks:
+  enduro-network:
+    driver: bridge
