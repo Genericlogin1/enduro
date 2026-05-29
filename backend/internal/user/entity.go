@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,10 +21,10 @@ type User struct {
 
 // Repository interface - belongs to the domain layer
 type Repository interface {
-	Create(ctx interface{ Deadline() (time.Time, bool) }, user *User) error
-	GetByID(ctx interface{ Deadline() (time.Time, bool) }, id uuid.UUID) (*User, error)
-	GetByEmail(ctx interface{ Deadline() (time.Time, bool) }, email string) (*User, error)
-	List(ctx interface{ Deadline() (time.Time, bool) }, limit, offset int) ([]*User, error)
-	Update(ctx interface{ Deadline() (time.Time, bool) }, user *User) error
-	Delete(ctx interface{ Deadline() (time.Time, bool) }, id uuid.UUID) error
+	Create(ctx context.Context, user *User) error
+	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
+	GetByEmail(ctx context.Context, email string) (*User, error)
+	List(ctx context.Context, limit, offset int) ([]*User, error)
+	Update(ctx context.Context, user *User) error
+	Delete(ctx context.Context, id uuid.UUID) error
 }
