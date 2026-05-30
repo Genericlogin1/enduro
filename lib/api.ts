@@ -1,7 +1,7 @@
 const API_BASE = 'https://enduro-production-20f5.up.railway.app/api/v1';
 
 export class ApiError extends Error {
-  constructor(public code: string, message: string) {
+  constructor(public code: string, message: string, public status?: number) {
     super(message);
   }
 }
@@ -19,10 +19,21 @@ export async function apiFetch<T = any>(
 
   const res = await fetch(API_BASE + path, { ...options, headers, cache: 'no-store' });
 
+  if (res.status === 401) {
+    // Token invalid — clear session and redirect to login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('enduro_token');
+      localStorage.removeItem('enduro_user');
+      document.cookie = 'enduro_token=; path=/; max-age=0';
+      window.location.href = '/login';
+    }
+    throw new ApiError('UNAUTHORIZED', 'Session expired. Please sign in again.', 401);
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     const err = body?.error;
-    throw new ApiError(err?.code || 'UNKNOWN', err?.message || 'Request failed');
+    throw new ApiError(err?.code || 'UNKNOWN', err?.message || 'Request failed', res.status);
   }
 
   const text = await res.text();

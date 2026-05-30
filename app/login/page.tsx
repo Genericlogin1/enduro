@@ -19,11 +19,11 @@ function LoginForm() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<{ token: string; user: { id: string; name: string; email: string } }>(
+      const data = await apiFetch<{ access_token: string; user: { id: string; name: string; email: string } }>(
         '/auth/login',
         { method: 'POST', body: JSON.stringify({ email, password }) },
       );
-      setSession(data.token, data.user);
+      setSession(data.access_token, data.user);
       router.push(params.get('next') || '/');
       router.refresh();
     } catch (e: any) {

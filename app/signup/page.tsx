@@ -19,11 +19,11 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<{ token: string; user: { id: string; name: string; email: string } }>(
+      const data = await apiFetch<{ access_token: string; user: { id: string; name: string; email: string } }>(
         '/auth/register',
         { method: 'POST', body: JSON.stringify({ email, password, name }) },
       );
-      setSession(data.token, data.user);
+      setSession(data.access_token, data.user);
       router.push('/');
       router.refresh();
     } catch (e: any) {
