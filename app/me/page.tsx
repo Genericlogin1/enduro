@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
 import Garage from '@/components/Garage';
+import DeleteButton from '@/components/DeleteButton';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import SignOutButton from '@/components/SignOutButton';
@@ -84,18 +85,18 @@ export default async function MePage() {
             </div>
           </div>
 
-          {/* Stats row */}
+          {/* Stats row — кликабельные */}
           <div className="grid grid-cols-4 gap-2 mt-5 mb-2">
             {[
-              { label: 'Rides', value: totalRides },
-              { label: 'Time', value: totalRides > 0 ? durationLabel : '—' },
-              { label: 'Routes', value: routes.length },
-              { label: 'Posts', value: posts.length },
-            ].map(({ label, value }) => (
-              <div key={label} className="card py-3 text-center">
+              { label: 'Rides', value: totalRides, href: '#gps-rides' },
+              { label: 'Time', value: totalRides > 0 ? durationLabel : '—', href: '#gps-rides' },
+              { label: 'Routes', value: routes.length, href: '#routes' },
+              { label: 'Posts', value: posts.length, href: '#posts' },
+            ].map(({ label, value, href }) => (
+              <a key={label} href={href} className="card py-3 text-center hover:border-moss/40 transition-colors cursor-pointer">
                 <div className="font-display text-xl leading-none text-ink">{value}</div>
                 <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">{label}</div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
@@ -106,7 +107,7 @@ export default async function MePage() {
         <Garage />
 
         {sessions.length > 0 && (
-          <section>
+          <section id="gps-rides">
             <div className="flex items-baseline justify-between mb-3">
               <h2 className="font-display text-xl">GPS rides <span className="text-muted text-base">({sessions.length})</span></h2>
               <Link href="/gps" className="text-xs text-moss-strong hover:underline">+ New ride</Link>
@@ -135,15 +136,15 @@ export default async function MePage() {
           </section>
         )}
 
-        <section>
+        <section id="routes">
           <div className="flex items-baseline justify-between mb-3">
-            <h2 className="font-display text-xl">My routes <span className="text-muted text-base">({routes?.length || 0})</span></h2>
-            <Link href="/map" className="text-xs text-moss-strong hover:underline">Open map</Link>
+            <h2 className="font-display text-xl">Мои маршруты <span className="text-muted text-base">({routes?.length || 0})</span></h2>
+            <Link href="/map" className="text-xs text-moss-strong hover:underline">Открыть карту</Link>
           </div>
           {!routes || routes.length === 0 ? (
             <div className="card p-6 text-center text-muted text-sm">
-              No routes saved yet.{' '}
-              <Link href="/map" className="text-moss-strong">Draw your first route →</Link>
+              Нет маршрутов.{' '}
+              <Link href="/map" className="text-moss-strong">Нарисуй первый →</Link>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -156,6 +157,13 @@ export default async function MePage() {
                       {r.distance_km != null && <span className="chip">{r.distance_km} km</span>}
                       {r.country && <span className="chip">{r.country}</span>}
                     </div>
+                    <div className="mt-2 pt-2 border-t border-line">
+                      <DeleteButton
+                        path={`/routes/${r.id}`}
+                        label="Удалить"
+                        confirm={`Удалить маршрут «${r.name}»?`}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -163,20 +171,20 @@ export default async function MePage() {
           )}
         </section>
 
-        <section>
+        <section id="posts">
           <div className="flex items-baseline justify-between mb-3">
-            <h2 className="font-display text-xl">My posts <span className="text-muted text-base">({posts?.length || 0})</span></h2>
-            <Link href="/new" className="text-xs text-rust-strong hover:underline">+ New post</Link>
+            <h2 className="font-display text-xl">Мои посты <span className="text-muted text-base">({posts?.length || 0})</span></h2>
+            <Link href="/new" className="text-xs text-rust-strong hover:underline">+ Новый пост</Link>
           </div>
           {!posts || posts.length === 0 ? (
             <div className="card p-6 text-center text-muted text-sm">
-              No posts yet.{' '}
-              <Link href="/new" className="text-rust-strong">Create your first →</Link>
+              Постов нет.{' '}
+              <Link href="/new" className="text-rust-strong">Создай первый →</Link>
             </div>
           ) : (
             <div className="space-y-4">
               {posts.map((p: any) => (
-                <PostCard key={p.id} post={p} isLoggedIn={true} />
+                <PostCard key={p.id} post={p} isLoggedIn={true} canDelete={true} />
               ))}
             </div>
           )}

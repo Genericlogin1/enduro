@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { apiFetch } from '@/lib/api';
 import { getToken } from '@/lib/token';
@@ -18,15 +19,31 @@ type Post = {
   liked_by_me: boolean;
 };
 
-export default function PostCard({ post, isLoggedIn }: { post: Post; isLoggedIn: boolean }) {
+export default function PostCard({ post, isLoggedIn, canDelete }: { post: Post; isLoggedIn: boolean; canDelete?: boolean }) {
+  const router = useRouter();
   const [liked, setLiked] = useState(post.liked_by_me);
   const [count, setCount] = useState(post.likes_count);
   const [pending, setPending] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const author = post.author_name || 'Rider';
   const initials = author.slice(0, 2).toUpperCase();
   const time = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
   const hasMedia = post.media_urls && post.media_urls.length > 0;
+
+  async function handleDelete() {
+    if (!window.confirm('Удалить пост? Это действие нельзя отменить.')) return;
+    setDeleting(true);
+    try {
+      await apiFetch(`/posts/${post.id}`, { method: 'DELETE' }, getToken());
+      setDeleted(true);
+      router.refresh();
+    } catch (e: any) {
+      alert(e.message || 'Ошибка удаления');
+      setDeleting(false);
+    }
+  }
 
   async function handleLike() {
     if (!isLoggedIn || pending) return;
@@ -45,6 +62,8 @@ export default function PostCard({ post, isLoggedIn }: { post: Post; isLoggedIn:
       setPending(false);
     }
   }
+
+  if (deleted) return null;
 
   return (
     <article className="card">
@@ -131,6 +150,16 @@ export default function PostCard({ post, isLoggedIn }: { post: Post; isLoggedIn:
         <div className="flex-1">
           <Comments postId={post.id} />
         </div>
+
+        {canDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs text-muted hover:text-rust-strong transition-colors disabled:opacity-40"
+          >
+            {deleting ? '...' : '🗑'}
+          </button>
+        )}
       </div>
     </article>
   );
