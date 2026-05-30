@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleMap, useJsApiLoader, DrawingManager, Polyline, Marker } from '@react-google-maps/api';
 import { apiFetch } from '@/lib/api';
@@ -36,6 +36,8 @@ type Route = {
   profiles?: { username: string | null; display_name: string | null } | null;
 };
 
+type GpsTrack = { id: string; name: string; points: { lat: number; lng: number }[] };
+
 export default function MapView({ apiKey, routes }: { apiKey: string; routes: Route[] }) {
   const router = useRouter();
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: apiKey, libraries });
@@ -47,7 +49,27 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeRoute, setActiveRoute] = useState<Route | null>(null);
+  const [gpsTracks, setGpsTracks] = useState<GpsTrack[]>([]);
+  const [showGps, setShowGps] = useState(true);
   const drawingRef = useRef<google.maps.drawing.DrawingManager | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) return;
+    apiFetch<{ sessions: any[] }>('/tracking/sessions?limit=10', {}, token)
+      .then(async d => {
+        const sessions = d?.sessions ?? [];
+        const tracks = await Promise.all(
+          sessions.map(async s => {
+            const full = await apiFetch<any>(`/tracking/sessions/${s.id}`, {}, token).catch(() => null);
+            const pts = (full?.points ?? []).map((p: any) => ({ lat: p.lat, lng: p.lng }));
+            return { id: s.id, name: s.name || 'GPS ride', points: pts };
+          })
+        );
+        setGpsTracks(tracks.filter(t => t.points.length > 1));
+      })
+      .catch(() => {});
+  }, []);
 
   const center = useMemo(() => ({ lat: 47, lng: 15 }), []);
   const distance = haversineKm(path);
@@ -129,7 +151,34 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
           {routes.filter(r => r.start_lat && r.start_lng).map(r => (
             <Marker key={'m-' + r.id} position={{ lat: r.start_lat as number, lng: r.start_lng as number }} onClick={() => setActiveRoute(r)} />
           ))}
+          {showGps && gpsTracks.map(t => (
+            <Polyline
+              key={'gps-' + t.id}
+              path={t.points}
+              options={{ strokeColor: '#22d3ee', strokeWeight: 3, strokeOpacity: 0.85 }}
+            />
+          ))}
         </GoogleMap>
+
+        {/* Legend */}
+        {(routes.length > 0 || gpsTracks.length > 0) && (
+          <div className="absolute bottom-2 left-2 flex flex-col gap-1">
+            {routes.length > 0 && (
+              <div className="flex items-center gap-1.5 bg-zinc-900/90 rounded px-2 py-1 text-xs text-zinc-300">
+                <span className="w-3 h-0.5 bg-zinc-400 inline-block" />Routes ({routes.length})
+              </div>
+            )}
+            {gpsTracks.length > 0 && (
+              <button
+                onClick={() => setShowGps(v => !v)}
+                className="flex items-center gap-1.5 bg-zinc-900/90 rounded px-2 py-1 text-xs text-zinc-300 hover:text-white"
+              >
+                <span className="w-3 h-0.5 bg-cyan-400 inline-block" />
+                My GPS tracks ({gpsTracks.length}) {showGps ? '●' : '○'}
+              </button>
+            )}
+          </div>
+        )}
 
         {activeRoute && (
           <div className="absolute top-2 left-2 right-2 max-w-sm bg-zinc-900/95 border border-zinc-800 rounded-lg p-3 text-sm">
