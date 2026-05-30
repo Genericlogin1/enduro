@@ -3,7 +3,8 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleMap, useJsApiLoader, DrawingManager, Polyline, Marker } from '@react-google-maps/api';
-import { saveRoute } from '@/app/actions';
+import { apiFetch } from '@/lib/api';
+import { getToken } from '@/lib/token';
 
 const libraries: ('drawing' | 'places' | 'geometry')[] = ['drawing', 'geometry'];
 
@@ -61,24 +62,29 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
   const handleSave = async () => {
     if (!name.trim()) { setError('Route name required'); return; }
     if (path.length < 2) { setError('Draw a route first (at least 2 points)'); return; }
+    const token = getToken();
+    if (!token) { router.push('/login?next=/map'); return; }
     setError(null);
     setSaving(true);
     try {
       const geojson = { type: 'LineString', coordinates: path.map(p => [p.lng, p.lat]) };
-      const fd = new FormData();
-      fd.set('name', name);
-      fd.set('description', description);
-      fd.set('difficulty', difficulty);
-      fd.set('country', country);
-      fd.set('distance_km', String(distance));
-      fd.set('geojson', JSON.stringify(geojson));
-      fd.set('start_lat', String(path[0].lat));
-      fd.set('start_lng', String(path[0].lng));
-      await saveRoute(fd);
+      await apiFetch('/routes', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim() || null,
+          difficulty,
+          country: country.trim() || null,
+          distance_km: distance,
+          geojson,
+          start_lat: path[0].lat,
+          start_lng: path[0].lng,
+        }),
+      }, token);
       setPath([]); setName(''); setDescription(''); setCountry('');
       router.refresh();
     } catch (e: any) {
-      setError(e.message || 'Failed to save');
+      setError(e.message || 'Failed to save route');
     } finally {
       setSaving(false);
     }

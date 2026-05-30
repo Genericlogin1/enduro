@@ -42,6 +42,22 @@ func (h *SocialHandler) Unfollow(c *fiber.Ctx) error {
 	return response.NoContent(c)
 }
 
+func (h *SocialHandler) IsFollowing(c *fiber.Ctx) error {
+	followingID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.ErrBadRequest)
+	}
+	callerID, ok := middleware.UserIDFromCtx(c)
+	if !ok {
+		return response.OK(c, fiber.Map{"is_following": false})
+	}
+	result, err := h.uc.IsFollowing(c.UserContext(), callerID, followingID)
+	if err != nil {
+		return response.Error(c, err)
+	}
+	return response.OK(c, fiber.Map{"is_following": result})
+}
+
 func (h *SocialHandler) GetFollowers(c *fiber.Ctx) error {
 	userID, err := uuid.Parse(c.Params("id"))
 	if err != nil {

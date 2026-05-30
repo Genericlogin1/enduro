@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
+import Garage from '@/components/Garage';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import SignOutButton from '@/components/SignOutButton';
@@ -74,6 +75,8 @@ export default async function MePage() {
       </header>
 
       <main className="max-w-xl mx-auto px-4 py-5 space-y-8">
+        <Garage />
+
         {sessions.length > 0 && (
           <section>
             <div className="flex items-baseline justify-between mb-3">

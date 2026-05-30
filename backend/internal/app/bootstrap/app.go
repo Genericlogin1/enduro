@@ -29,6 +29,10 @@ import (
 	socialhandler "enduro/internal/social/handler"
 	socialrepo "enduro/internal/social/repository/postgres"
 	socialusecase "enduro/internal/social/usecase"
+	garagedomain "enduro/internal/garage"
+	garagehandler "enduro/internal/garage/handler"
+	garagerepo "enduro/internal/garage/repository/postgres"
+	garageusecase "enduro/internal/garage/usecase"
 	trackingdomain "enduro/internal/tracking"
 	trackinghandler "enduro/internal/tracking/handler"
 	trackingrepo "enduro/internal/tracking/repository/postgres"
@@ -61,6 +65,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	routeRepository    := routerepo.NewRouteRepository(pool)
 	socialRepository   := socialrepo.NewSocialRepository(pool)
 	trackingRepository := trackingrepo.NewTrackingRepository(pool)
+	garageRepository   := garagerepo.NewGarageRepository(pool)
 
 	// ── Usecases ─────────────────────────────────────────────────────────────
 	authUC     := authusecase.NewAuthUsecase(userRepository, jwtManager)
@@ -69,6 +74,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	routeUC    := routeusecase.NewRouteUsecase(routeRepository)
 	socialUC   := socialusecase.NewSocialUsecase(socialRepository)
 	trackingUC := trackingusecase.NewTrackingUsecase(trackingRepository)
+	garageUC   := garageusecase.NewGarageUsecase(garageRepository)
 
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	authH     := authhandler.NewAuthHandler(authUC)
@@ -77,6 +83,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	routeH    := routehandler.NewRouteHandler(routeUC)
 	socialH   := socialhandler.NewSocialHandler(socialUC)
 	trackingH := trackinghandler.NewTrackingHandler(trackingUC, jwtManager, log)
+	garageH   := garagehandler.NewGarageHandler(garageUC)
 
 	// ── Fiber ─────────────────────────────────────────────────────────────────
 	app := fiber.New(fiber.Config{
@@ -115,6 +122,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	routedomain.RegisterRoutes(v1, routeH, jwtManager)
 	socialdomain.RegisterRoutes(v1, socialH, jwtManager)
 	trackingdomain.RegisterRoutes(v1, trackingH, jwtManager)
+	garagedomain.RegisterRoutes(v1, garageH, jwtManager)
 
 	// ── Graceful shutdown ─────────────────────────────────────────────────────
 	quit := make(chan os.Signal, 1)

@@ -15,6 +15,7 @@ import (
 type SocialUsecase interface {
 	Follow(ctx context.Context, followerID, followingID uuid.UUID) error
 	Unfollow(ctx context.Context, followerID, followingID uuid.UUID) error
+	IsFollowing(ctx context.Context, followerID, followingID uuid.UUID) (bool, error)
 	GetFollowers(ctx context.Context, userID uuid.UUID, limit, offset int) ([]uuid.UUID, error)
 	GetFollowing(ctx context.Context, userID uuid.UUID, limit, offset int) ([]uuid.UUID, error)
 	AddComment(ctx context.Context, postID, authorID uuid.UUID, req dto.CreateCommentRequest) (dto.CommentResponse, error)
@@ -47,6 +48,10 @@ func (u *socialUsecase) Unfollow(ctx context.Context, followerID, followingID uu
 		return entity.ErrNotFollowing
 	}
 	return err
+}
+
+func (u *socialUsecase) IsFollowing(ctx context.Context, followerID, followingID uuid.UUID) (bool, error) {
+	return u.repo.IsFollowing(ctx, followerID, followingID)
 }
 
 func (u *socialUsecase) GetFollowers(ctx context.Context, userID uuid.UUID, limit, offset int) ([]uuid.UUID, error) {

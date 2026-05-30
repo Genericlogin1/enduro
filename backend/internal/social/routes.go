@@ -15,6 +15,7 @@ func RegisterRoutes(router fiber.Router, h *handler.SocialHandler, jwtManager *j
 	users.Get("/:id/following", h.GetFollowing)
 	users.Post("/:id/follow", middleware.Auth(jwtManager), h.Follow)
 	users.Delete("/:id/follow", middleware.Auth(jwtManager), h.Unfollow)
+	users.Get("/:id/is-following", middleware.Auth(jwtManager), h.IsFollowing)
 
 	// Comments on posts
 	posts := router.Group("/posts")

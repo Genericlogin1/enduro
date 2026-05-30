@@ -1,5 +1,6 @@
 import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
+import FollowButton from '@/components/FollowButton';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import Link from 'next/link';
@@ -47,6 +48,7 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
               {posts.length} post{posts.length !== 1 ? 's' : ''} · {routes.length} route{routes.length !== 1 ? 's' : ''}
             </div>
           </div>
+          <FollowButton targetId={id} />
         </div>
       </header>
 
