@@ -2,11 +2,12 @@
 
 import { useMemo } from 'react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
+import { MAPS_LIBRARIES } from '@/lib/mapsLoader';
 
 type Point = { lat: number; lng: number; altitude: number; speed: number; recorded_at: string };
 
 export default function GpsTrackMap({ apiKey, points }: { apiKey: string; points: Point[] }) {
-  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: apiKey });
+  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: apiKey, libraries: MAPS_LIBRARIES });
 
   const path = useMemo(() => points.map(p => ({ lat: p.lat, lng: p.lng })), [points]);
 

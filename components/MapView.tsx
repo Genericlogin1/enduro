@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { GoogleMap, useJsApiLoader, DrawingManager, Polyline, Marker } from '@react-google-maps/api';
 import { apiFetch } from '@/lib/api';
 import { getToken } from '@/lib/token';
-
-const libraries: ('drawing' | 'places' | 'geometry')[] = ['drawing', 'geometry'];
+import { MAPS_LIBRARIES } from '@/lib/mapsLoader';
 
 function haversineKm(coords: { lat: number; lng: number }[]): number {
   if (coords.length < 2) return 0;
@@ -40,7 +39,7 @@ type GpsTrack = { id: string; name: string; points: { lat: number; lng: number }
 
 export default function MapView({ apiKey, routes }: { apiKey: string; routes: Route[] }) {
   const router = useRouter();
-  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: apiKey, libraries });
+  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: apiKey, libraries: MAPS_LIBRARIES });
   const [path, setPath] = useState<{ lat: number; lng: number }[]>([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

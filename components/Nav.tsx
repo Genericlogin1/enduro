@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Icon = ({ name, className = '' }: { name: string; className?: string }) => {
   const paths: Record<string, JSX.Element> = {
@@ -25,7 +26,11 @@ export default function Nav({ active }: { active?: string }) {
   const pathname = usePathname();
   return (
     <nav className="fixed bottom-0 inset-x-0 bg-base/95 backdrop-blur border-t border-line z-20">
-      <div className="max-w-xl mx-auto grid grid-cols-5">
+      <div className="max-w-xl mx-auto relative">
+        <div className="absolute right-3 -top-10">
+          <ThemeToggle />
+        </div>
+        <div className="grid grid-cols-5">
         {tabs.map(t => {
           const isActive = active === t.key || pathname === t.href || (t.href !== '/' && pathname.startsWith(t.href));
           const isNew = t.key === 'new';
@@ -42,6 +47,7 @@ export default function Nav({ active }: { active?: string }) {
             </Link>
           );
         })}
+        </div>
       </div>
     </nav>
   );

@@ -1,6 +1,5 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
 
 export const metadata: Metadata = {
   title: 'Enduro World',
@@ -9,8 +8,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={GeistSans.className + ' bg-base text-ink antialiased min-h-screen'}>
+    <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light');
+              }
+            } catch(e){}
+          `
+        }} />
+      </head>
+      <body className="bg-base text-ink min-h-screen">
         {children}
       </body>
     </html>
