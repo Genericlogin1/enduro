@@ -11,7 +11,8 @@ export default async function MapPage({ searchParams }: { searchParams: { q?: st
   if (searchParams.country) params.set('country', searchParams.country);
   if (searchParams.difficulty) params.set('difficulty', searchParams.difficulty);
 
-  const routes = await apiFetch<any[]>(`/routes?${params}`).catch(() => []);
+  const data = await apiFetch<{ routes: any[] }>(`/routes?${params}`).catch(() => ({ routes: [] }));
+  const routes = data?.routes ?? [];
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   return (
@@ -22,11 +23,11 @@ export default async function MapPage({ searchParams }: { searchParams: { q?: st
             <h1 className="font-display text-2xl leading-none">Routes</h1>
             <p className="text-[11px] text-muted mt-0.5">Draw your route and share it</p>
           </div>
-          <span className="chip">{routes?.length || 0} found</span>
+          <span className="chip">{routes.length} found</span>
         </div>
       </header>
       <MapSearch initial={searchParams} />
-      <MapView apiKey={apiKey} routes={(routes as any) || []} />
+      <MapView apiKey={apiKey} routes={routes} />
       <Nav active="map" />
     </div>
   );
