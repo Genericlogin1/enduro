@@ -75,6 +75,31 @@ func (r *trackingRepository) AddPoint(ctx context.Context, p *entity.TrackPoint)
 	return err
 }
 
+func (r *trackingRepository) ListSessions(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*entity.TrackSession, error) {
+	rows, err := r.q(ctx).Query(ctx,
+		`SELECT id,user_id,route_id,name,status,started_at,finished_at,created_at FROM track_sessions WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+		userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var sessions []*entity.TrackSession
+	for rows.Next() {
+		s := &entity.TrackSession{}
+		if err := rows.Scan(&s.ID, &s.UserID, &s.RouteID, &s.Name, &s.Status, &s.StartedAt, &s.FinishedAt, &s.CreatedAt); err != nil {
+			return nil, err
+		}
+		sessions = append(sessions, s)
+	}
+	return sessions, rows.Err()
+}
+
+func (r *trackingRepository) CountPoints(ctx context.Context, sessionID uuid.UUID) (int, error) {
+	var count int
+	err := r.q(ctx).QueryRow(ctx, `SELECT COUNT(*) FROM track_points WHERE session_id=$1`, sessionID).Scan(&count)
+	return count, err
+}
+
 func (r *trackingRepository) ListPoints(ctx context.Context, sessionID uuid.UUID) ([]*entity.TrackPoint, error) {
 	rows, err := r.q(ctx).Query(ctx,
 		`SELECT id,session_id,lat,lng,altitude,speed,recorded_at FROM track_points WHERE session_id=$1 ORDER BY recorded_at ASC`,

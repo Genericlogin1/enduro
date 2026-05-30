@@ -124,7 +124,9 @@ func (r *socialRepository) GetComment(ctx context.Context, id uuid.UUID) (*entit
 
 func (r *socialRepository) ListComments(ctx context.Context, postID uuid.UUID, limit, offset int) ([]*entity.Comment, error) {
 	rows, err := r.q(ctx).Query(ctx,
-		`SELECT id,post_id,author_id,content,created_at,updated_at FROM comments WHERE post_id=$1 ORDER BY created_at ASC LIMIT $2 OFFSET $3`,
+		`SELECT c.id,c.post_id,c.author_id,COALESCE(u.name,'') as author_name,c.content,c.created_at
+		 FROM comments c LEFT JOIN users u ON u.id=c.author_id
+		 WHERE c.post_id=$1 ORDER BY c.created_at ASC LIMIT $2 OFFSET $3`,
 		postID, limit, offset)
 	if err != nil {
 		return nil, err
@@ -134,7 +136,7 @@ func (r *socialRepository) ListComments(ctx context.Context, postID uuid.UUID, l
 	var comments []*entity.Comment
 	for rows.Next() {
 		c := &entity.Comment{}
-		if err := rows.Scan(&c.ID, &c.PostID, &c.AuthorID, &c.Content, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.PostID, &c.AuthorID, &c.AuthorName, &c.Content, &c.CreatedAt); err != nil {
 			return nil, err
 		}
 		comments = append(comments, c)

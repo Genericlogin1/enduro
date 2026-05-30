@@ -10,6 +10,7 @@ import (
 
 func RegisterRoutes(router fiber.Router, h *handler.TrackingHandler, jwtManager *jwtutil.Manager) {
 	tr := router.Group("/tracking", middleware.Auth(jwtManager))
+	tr.Get("/sessions", h.ListSessions)
 	tr.Post("/sessions", h.StartSession)
 	tr.Patch("/sessions/:id/finish", h.FinishSession)
 	tr.Get("/sessions/:id", h.GetSession)

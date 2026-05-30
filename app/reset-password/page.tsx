@@ -1,26 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { apiFetch } from '@/lib/api';
+import { setSession } from '@/lib/token';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token') ?? '';
+
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) setReady(true);
-      else setError('This reset link is invalid or has expired. Request a new one.');
-    });
-  }, []);
+  const ready = !!token;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,12 +25,21 @@ export default function ResetPasswordPage() {
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     if (password !== confirm) { setError('Passwords do not match.'); return; }
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    setDone(true);
-    setTimeout(() => router.push('/'), 1500);
+    try {
+      const data = await apiFetch<{ access_token: string; user: any }>('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, new_password: password }),
+      });
+      if (data?.access_token) {
+        setSession(data.access_token, data.user);
+      }
+      setDone(true);
+      setTimeout(() => router.push('/'), 1500);
+    } catch (err: any) {
+      setError(err?.message || 'This reset link is invalid or has expired.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -43,6 +49,11 @@ export default function ResetPasswordPage() {
           <h1 className="font-display text-3xl text-ink">NEW PASSWORD</h1>
           <p className="text-xs text-muted uppercase tracking-wider">Pick something you will remember</p>
         </div>
+        {!ready && (
+          <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">
+            Missing reset token. Please use the link from your email.
+          </div>
+        )}
         {done && <div className="border border-moss-strong/40 bg-moss/10 text-ink/90 text-sm px-3 py-3 rounded-md text-center">Password updated. Redirecting...</div>}
         {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
         <input

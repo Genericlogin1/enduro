@@ -65,6 +65,17 @@ func (h *TrackingHandler) GetSession(c *fiber.Ctx) error {
 	return response.OK(c, resp)
 }
 
+func (h *TrackingHandler) ListSessions(c *fiber.Ctx) error {
+	callerID, _ := middleware.UserIDFromCtx(c)
+	limit := c.QueryInt("limit", 20)
+	offset := c.QueryInt("offset", 0)
+	sessions, err := h.uc.ListSessions(c.UserContext(), callerID, limit, offset)
+	if err != nil {
+		return response.Error(c, err)
+	}
+	return response.OK(c, fiber.Map{"sessions": sessions})
+}
+
 // AddPoints accepts a batch of GPS points via REST (fallback for WebSocket).
 func (h *TrackingHandler) AddPoints(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))

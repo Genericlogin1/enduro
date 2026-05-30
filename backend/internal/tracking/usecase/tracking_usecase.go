@@ -16,6 +16,7 @@ type TrackingUsecase interface {
 	StartSession(ctx context.Context, userID uuid.UUID, req dto.StartSessionRequest) (dto.SessionResponse, error)
 	FinishSession(ctx context.Context, sessionID, callerID uuid.UUID) (dto.SessionResponse, error)
 	GetSession(ctx context.Context, sessionID, callerID uuid.UUID) (dto.SessionResponse, error)
+	ListSessions(ctx context.Context, userID uuid.UUID, limit, offset int) ([]dto.SessionSummary, error)
 	AddPoint(ctx context.Context, inp dto.TrackPointInput) (dto.TrackPointResponse, error)
 }
 
@@ -77,6 +78,19 @@ func (u *trackingUsecase) GetSession(ctx context.Context, sessionID, callerID uu
 	}
 	points, _ := u.repo.ListPoints(ctx, sessionID)
 	return dto.ToSessionResponse(s, points), nil
+}
+
+func (u *trackingUsecase) ListSessions(ctx context.Context, userID uuid.UUID, limit, offset int) ([]dto.SessionSummary, error) {
+	sessions, err := u.repo.ListSessions(ctx, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.SessionSummary, len(sessions))
+	for i, s := range sessions {
+		count, _ := u.repo.CountPoints(ctx, s.ID)
+		result[i] = dto.ToSessionSummary(s, count)
+	}
+	return result, nil
 }
 
 func (u *trackingUsecase) AddPoint(ctx context.Context, inp dto.TrackPointInput) (dto.TrackPointResponse, error) {

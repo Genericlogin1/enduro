@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { apiFetch } from '@/lib/api';
 import { getToken } from '@/lib/token';
+import Comments from '@/components/Comments';
 
 type Post = {
   id: string;
@@ -76,17 +77,20 @@ export default function PostCard({
         <p className="px-4 py-3 whitespace-pre-wrap text-sm text-ink/90">{post.content}</p>
       )}
 
-      <footer className="flex items-center gap-5 px-4 py-3 border-t border-line text-sm">
-        <button
-          onClick={handleLike}
-          disabled={pending || !isLoggedIn}
-          className={'flex items-center gap-1.5 transition ' + (liked ? 'text-rust-strong' : 'text-muted hover:text-ink')}
-        >
-          <svg viewBox="0 0 20 20" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" className="w-5 h-5">
-            <path strokeWidth="1.6" d="M10 17s-6-3.6-6-8.2A3.8 3.8 0 0110 4a3.8 3.8 0 016 4.8C16 13.4 10 17 10 17z" />
-          </svg>
-          <span>{count}</span>
-        </button>
+      <footer className="px-4 pb-3 border-t border-line">
+        <div className="flex items-center gap-5 py-2.5 text-sm">
+          <button
+            onClick={handleLike}
+            disabled={pending || !isLoggedIn}
+            className={'flex items-center gap-1.5 transition ' + (liked ? 'text-rust-strong' : 'text-muted hover:text-ink')}
+          >
+            <svg viewBox="0 0 20 20" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" className="w-5 h-5">
+              <path strokeWidth="1.6" d="M10 17s-6-3.6-6-8.2A3.8 3.8 0 0110 4a3.8 3.8 0 016 4.8C16 13.4 10 17 10 17z" />
+            </svg>
+            <span>{count}</span>
+          </button>
+        </div>
+        <Comments postId={post.id} />
       </footer>
     </article>
   );

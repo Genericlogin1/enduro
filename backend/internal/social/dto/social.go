@@ -13,17 +13,17 @@ type CreateCommentRequest struct {
 }
 
 type CommentResponse struct {
-	ID        uuid.UUID `json:"id"`
-	PostID    uuid.UUID `json:"post_id"`
-	AuthorID  uuid.UUID `json:"author_id"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID         uuid.UUID `json:"id"`
+	PostID     uuid.UUID `json:"post_id"`
+	AuthorID   uuid.UUID `json:"author_id"`
+	AuthorName string    `json:"author_name"`
+	Content    string    `json:"content"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func ToCommentResponse(c *entity.Comment) CommentResponse {
 	return CommentResponse{
 		ID: c.ID, PostID: c.PostID, AuthorID: c.AuthorID,
-		Content: c.Content, CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt,
+		AuthorName: c.AuthorName, Content: c.Content, CreatedAt: c.CreatedAt,
 	}
 }

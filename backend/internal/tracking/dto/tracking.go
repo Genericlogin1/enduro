@@ -14,11 +14,11 @@ type StartSessionRequest struct {
 }
 
 type TrackPointInput struct {
-	SessionID  uuid.UUID `json:"session_id"`
-	Lat        float64   `json:"lat"`
-	Lng        float64   `json:"lng"`
-	Altitude   float64   `json:"altitude"`
-	Speed      float64   `json:"speed"`
+	SessionID  uuid.UUID  `json:"session_id"`
+	Lat        float64    `json:"lat"`
+	Lng        float64    `json:"lng"`
+	Altitude   float64    `json:"altitude"`
+	Speed      float64    `json:"speed"`
 	RecordedAt *time.Time `json:"recorded_at"`
 }
 
@@ -44,6 +44,16 @@ type SessionResponse struct {
 	Points     []TrackPointResponse `json:"points,omitempty"`
 }
 
+type SessionSummary struct {
+	ID          uuid.UUID  `json:"id"`
+	Name        string     `json:"name"`
+	Status      string     `json:"status"`
+	StartedAt   time.Time  `json:"started_at"`
+	FinishedAt  *time.Time `json:"finished_at"`
+	PointsCount int        `json:"points_count"`
+	DurationSec int        `json:"duration_sec"`
+}
+
 func ToSessionResponse(s *entity.TrackSession, points []*entity.TrackPoint) SessionResponse {
 	resp := SessionResponse{
 		ID: s.ID, UserID: s.UserID, RouteID: s.RouteID,
@@ -58,4 +68,16 @@ func ToSessionResponse(s *entity.TrackSession, points []*entity.TrackPoint) Sess
 		})
 	}
 	return resp
+}
+
+func ToSessionSummary(s *entity.TrackSession, pointsCount int) SessionSummary {
+	dur := 0
+	if s.FinishedAt != nil {
+		dur = int(s.FinishedAt.Sub(s.StartedAt).Seconds())
+	}
+	return SessionSummary{
+		ID: s.ID, Name: s.Name, Status: s.Status,
+		StartedAt: s.StartedAt, FinishedAt: s.FinishedAt,
+		PointsCount: pointsCount, DurationSec: dur,
+	}
 }

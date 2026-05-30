@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { apiFetch } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -14,12 +14,18 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const redirectTo = window.location.origin + '/auth/callback?next=/reset-password';
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    setSent(true);
+    try {
+      await apiFetch('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      setSent(true);
+    } catch (err: any) {
+      // Always show success to avoid email enumeration
+      setSent(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -32,9 +38,9 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="space-y-3 text-center">
             <div className="border border-moss-strong/40 bg-moss/10 text-ink/90 text-sm px-3 py-3 rounded-md">
-              Check your inbox — reset link sent.
+              If that email is registered, a reset link is on its way.
             </div>
-            <p className="text-sm text-muted">Did not get it? Look in spam, or try again in a minute.</p>
+            <p className="text-sm text-muted">Did not get it? Check spam, or try again in a minute.</p>
             <Link href="/login" className="btn btn-ghost w-full">Back to sign in</Link>
           </div>
         ) : (

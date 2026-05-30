@@ -45,13 +45,15 @@ export default async function MePage() {
     userId = payload.user_id || payload.sub || '';
   } catch {}
 
-  const [postsData, routesData, userInfo] = await Promise.all([
+  const [postsData, routesData, sessionsData, userInfo] = await Promise.all([
     userId ? apiFetch<{ posts: any[] }>(`/posts?author_id=${userId}&limit=20`, {}, token).catch(() => ({ posts: [] })) : { posts: [] },
     userId ? apiFetch<{ routes: any[] }>(`/routes?author_id=${userId}&limit=20`, {}, token).catch(() => ({ routes: [] })) : { routes: [] },
+    token ? apiFetch<{ sessions: any[] }>('/tracking/sessions?limit=10', {}, token).catch(() => ({ sessions: [] })) : { sessions: [] },
     userId ? apiFetch<any>(`/users/${userId}`, {}, token).catch(() => null) : null,
   ]);
   const posts = postsData?.posts ?? [];
   const routes = routesData?.routes ?? [];
+  const sessions = sessionsData?.sessions ?? [];
 
   userName = userInfo?.name || 'Rider';
   const initials = userName.slice(0, 2).toUpperCase();
@@ -72,6 +74,36 @@ export default async function MePage() {
       </header>
 
       <main className="max-w-xl mx-auto px-4 py-5 space-y-8">
+        {sessions.length > 0 && (
+          <section>
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="font-display text-xl">GPS rides <span className="text-muted text-base">({sessions.length})</span></h2>
+              <Link href="/gps" className="text-xs text-moss-strong hover:underline">+ New ride</Link>
+            </div>
+            <div className="space-y-2">
+              {sessions.map((s: any) => {
+                const mins = Math.round((s.duration_sec || 0) / 60);
+                const km = s.distance_km != null ? s.distance_km.toFixed(1) : null;
+                return (
+                  <div key={s.id} className="card p-3 flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm truncate">{s.name || 'Unnamed ride'}</div>
+                      <div className="text-xs text-muted mt-0.5">
+                        {s.points_count} pts
+                        {mins > 0 && ` · ${mins} min`}
+                        {km && ` · ${km} km`}
+                      </div>
+                    </div>
+                    <span className={`chip ${s.status === 'active' ? 'chip-rust' : ''}`}>
+                      {s.status === 'active' ? 'live' : 'done'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         <section>
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="font-display text-xl">My routes <span className="text-muted text-base">({routes?.length || 0})</span></h2>
