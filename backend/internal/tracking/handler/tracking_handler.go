@@ -65,6 +65,26 @@ func (h *TrackingHandler) GetSession(c *fiber.Ctx) error {
 	return response.OK(c, resp)
 }
 
+// AddPoints accepts a batch of GPS points via REST (fallback for WebSocket).
+func (h *TrackingHandler) AddPoints(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.ErrBadRequest)
+	}
+	var points []dto.TrackPointInput
+	if err := c.BodyParser(&points); err != nil {
+		return response.Error(c, fiber.ErrBadRequest)
+	}
+	saved := 0
+	for _, p := range points {
+		p.SessionID = id
+		if _, err := h.uc.AddPoint(c.UserContext(), p); err == nil {
+			saved++
+		}
+	}
+	return response.OK(c, fiber.Map{"saved": saved})
+}
+
 // WSUpgrade authenticates via ?token= query param and upgrades to WebSocket.
 func (h *TrackingHandler) WSUpgrade(c *fiber.Ctx) error {
 	if !websocket.IsWebSocketUpgrade(c) {
