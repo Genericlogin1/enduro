@@ -17,6 +17,7 @@ type PostUsecase interface {
 	GetByID(ctx context.Context, id uuid.UUID, callerID uuid.UUID) (dto.PostResponse, error)
 	List(ctx context.Context, limit, offset int, callerID uuid.UUID) ([]dto.PostResponse, error)
 	ListByAuthor(ctx context.Context, authorID uuid.UUID, limit, offset int, callerID uuid.UUID) ([]dto.PostResponse, error)
+	ListFollowing(ctx context.Context, followerID uuid.UUID, limit, offset int) ([]dto.PostResponse, error)
 	Update(ctx context.Context, id, callerID uuid.UUID, req dto.UpdatePostRequest) (dto.PostResponse, error)
 	Delete(ctx context.Context, id, callerID uuid.UUID) error
 	ToggleLike(ctx context.Context, postID, userID uuid.UUID) error
@@ -102,6 +103,22 @@ func (u *postUsecase) ListByAuthor(ctx context.Context, authorID uuid.UUID, limi
 		if callerID != uuid.Nil {
 			liked, _ = u.repo.IsLiked(ctx, p.ID, callerID)
 		}
+		result[i] = dto.ToPostResponse(p, liked)
+	}
+	return result, nil
+}
+
+func (u *postUsecase) ListFollowing(ctx context.Context, followerID uuid.UUID, limit, offset int) ([]dto.PostResponse, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	posts, err := u.repo.ListByFollowing(ctx, followerID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.PostResponse, len(posts))
+	for i, p := range posts {
+		liked, _ := u.repo.IsLiked(ctx, p.ID, followerID)
 		result[i] = dto.ToPostResponse(p, liked)
 	}
 	return result, nil

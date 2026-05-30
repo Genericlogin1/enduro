@@ -8,22 +8,34 @@ import { getServerToken } from '@/lib/serverToken';
 
 export const dynamic = 'force-dynamic';
 
-export default async function FeedPage() {
+export default async function FeedPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string };
+}) {
   const token = await getServerToken();
+  const tab = searchParams?.tab === 'following' && token ? 'following' : 'all';
 
   const [postsData, news] = await Promise.all([
-    apiFetch<{ posts: any[] }>('/posts?limit=40', {}, token).catch(() => ({ posts: [] })),
-    getNews().catch(() => []),
+    tab === 'following'
+      ? apiFetch<{ posts: any[] }>('/posts?following=true&limit=40', {}, token).catch(() => ({ posts: [] }))
+      : apiFetch<{ posts: any[] }>('/posts?limit=40', {}, token).catch(() => ({ posts: [] })),
+    tab === 'all' ? getNews().catch(() => []) : Promise.resolve([]),
   ]);
   const posts = postsData?.posts ?? [];
+  const news2 = (news as any[]) ?? [];
 
   const feed: Array<{ kind: 'post' | 'news'; data: any }> = [];
-  const p = posts || [];
-  const n = news || [];
-  let pi = 0, ni = 0;
-  while (pi < p.length || ni < n.length) {
-    for (let k = 0; k < 3 && pi < p.length; k++) feed.push({ kind: 'post', data: p[pi++] });
-    if (ni < n.length) feed.push({ kind: 'news', data: n[ni++] });
+  if (tab === 'all') {
+    const p = posts;
+    const n = news2;
+    let pi = 0, ni = 0;
+    while (pi < p.length || ni < n.length) {
+      for (let k = 0; k < 3 && pi < p.length; k++) feed.push({ kind: 'post', data: p[pi++] });
+      if (ni < n.length) feed.push({ kind: 'news', data: n[ni++] });
+    }
+  } else {
+    posts.forEach(p => feed.push({ kind: 'post', data: p }));
   }
 
   return (
@@ -40,13 +52,42 @@ export default async function FeedPage() {
             <Link href="/login" className="btn btn-primary text-xs">Sign in</Link>
           )}
         </div>
+
+        {/* Tab bar */}
+        {token && (
+          <div className="max-w-xl mx-auto px-4 flex gap-1 pb-2">
+            <Link
+              href="/"
+              className={'text-xs font-semibold px-3 py-1 rounded-full transition-colors ' +
+                (tab === 'all' ? 'bg-moss/20 text-moss-strong' : 'text-muted hover:text-ink')}
+            >
+              All rides
+            </Link>
+            <Link
+              href="/?tab=following"
+              className={'text-xs font-semibold px-3 py-1 rounded-full transition-colors ' +
+                (tab === 'following' ? 'bg-moss/20 text-moss-strong' : 'text-muted hover:text-ink')}
+            >
+              Following
+            </Link>
+          </div>
+        )}
       </header>
 
       <main className="max-w-xl mx-auto px-4 py-4 space-y-4">
         {feed.length === 0 ? (
           <div className="text-center py-16 text-muted">
-            <p className="text-lg mb-2">The trail is quiet</p>
-            <p className="text-sm">Be the first to share your ride.</p>
+            {tab === 'following' ? (
+              <>
+                <p className="text-lg mb-2">No posts from followed riders yet</p>
+                <p className="text-sm">Follow other riders to see their rides here.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg mb-2">The trail is quiet</p>
+                <p className="text-sm">Be the first to share your ride.</p>
+              </>
+            )}
             <Link href={token ? '/new' : '/login'} className="btn btn-primary mt-4">
               {token ? 'Create post' : 'Sign in to post'}
             </Link>

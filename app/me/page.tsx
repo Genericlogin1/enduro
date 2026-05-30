@@ -59,20 +59,48 @@ export default async function MePage() {
   userName = userInfo?.name || 'Rider';
   const initials = userName.slice(0, 2).toUpperCase();
 
+  const totalRides = sessions.length;
+  const totalMinutes = sessions.reduce((acc: number, s: any) => acc + Math.round((s.duration_sec || 0) / 60), 0);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const remainingMins = totalMinutes % 60;
+  const durationLabel = totalHours > 0 ? `${totalHours}h ${remainingMins}m` : `${totalMinutes}m`;
+
   return (
     <div className="min-h-screen pb-24">
-      <header className="px-4 py-6 border-b border-line">
-        <div className="max-w-xl mx-auto flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center text-xl font-semibold">{initials}</div>
-          <div className="flex-1 min-w-0">
-            <div className="font-display text-2xl leading-none">{userName}</div>
-            <div className="text-sm text-muted mt-1">{userInfo?.email}</div>
+      {/* Profile hero */}
+      <div className="relative">
+        <div className="h-24 bg-gradient-to-br from-moss/30 via-moss/10 to-transparent" />
+        <div className="max-w-xl mx-auto px-4">
+          <div className="flex items-end gap-4 -mt-8">
+            <div className="w-20 h-20 rounded-full bg-moss/20 text-moss-strong border-4 border-bg-base flex items-center justify-center text-2xl font-bold shadow-lg">
+              {initials}
+            </div>
+            <div className="pb-1 flex-1 min-w-0">
+              <div className="font-display text-2xl leading-none">{userName}</div>
+              <div className="text-xs text-muted mt-0.5">{userInfo?.email}</div>
+            </div>
+            <div className="pb-1">
+              <SignOutButton />
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-4 gap-2 mt-5 mb-2">
+            {[
+              { label: 'Rides', value: totalRides },
+              { label: 'Time', value: totalRides > 0 ? durationLabel : '—' },
+              { label: 'Routes', value: routes.length },
+              { label: 'Posts', value: posts.length },
+            ].map(({ label, value }) => (
+              <div key={label} className="card py-3 text-center">
+                <div className="font-display text-xl leading-none text-ink">{value}</div>
+                <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="max-w-xl mx-auto mt-4">
-          <SignOutButton />
-        </div>
-      </header>
+      </div>
+      <header className="hidden" />
 
       <main className="max-w-xl mx-auto px-4 py-5 space-y-8">
         <Garage />

@@ -61,6 +61,14 @@ func (h *PostHandler) List(c *fiber.Ctx) error {
 		return response.OK(c, fiber.Map{"posts": resp})
 	}
 
+	if c.QueryBool("following") && callerID != uuid.Nil {
+		resp, err := h.uc.ListFollowing(c.UserContext(), callerID, limit, offset)
+		if err != nil {
+			return response.Error(c, err)
+		}
+		return response.OK(c, fiber.Map{"posts": resp})
+	}
+
 	resp, err := h.uc.List(c.UserContext(), limit, offset, callerID)
 	if err != nil {
 		return response.Error(c, err)

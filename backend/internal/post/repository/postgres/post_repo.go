@@ -87,6 +87,14 @@ func (r *postRepository) scanPosts(ctx context.Context, q string, args ...any) (
 	return posts, rows.Err()
 }
 
+func (r *postRepository) ListByFollowing(ctx context.Context, followerID uuid.UUID, limit, offset int) ([]*entity.Post, error) {
+	q := `SELECT p.id, p.author_id, COALESCE(u.name,'') as author_name, p.content, p.location, p.media_urls, p.likes_count, p.created_at, p.updated_at
+	      FROM posts p LEFT JOIN users u ON u.id = p.author_id
+	      WHERE p.author_id IN (SELECT following_id FROM follows WHERE follower_id = $1)
+	      ORDER BY p.created_at DESC LIMIT $2 OFFSET $3`
+	return r.scanPosts(ctx, q, followerID, limit, offset)
+}
+
 func (r *postRepository) Update(ctx context.Context, p *entity.Post) error {
 	q := `UPDATE posts SET content=$1, location=$2, updated_at=$3 WHERE id=$4`
 	tag, err := r.q(ctx).Exec(ctx, q, p.Content, p.Location, p.UpdatedAt, p.ID)
