@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
+import ReportCard from '@/components/ReportCard';
 import NewsCard from '@/components/NewsCard';
 import { getNews } from '@/lib/news';
 import { apiFetch } from '@/lib/api';
@@ -14,29 +15,45 @@ export default async function FeedPage({
   searchParams: { tab?: string };
 }) {
   const token = await getServerToken();
-  const tab = searchParams?.tab === 'following' && token ? 'following' : 'all';
+  const tab = searchParams?.tab === 'following' ? 'following'
+    : searchParams?.tab === 'reports' ? 'reports'
+    : 'all';
 
-  const [postsData, news] = await Promise.all([
-    tab === 'following'
-      ? apiFetch<{ posts: any[] }>('/posts?following=true&limit=40', {}, token).catch(() => ({ posts: [] }))
-      : apiFetch<{ posts: any[] }>('/posts?limit=40', {}, token).catch(() => ({ posts: [] })),
+  const [postsData, reportsData, news] = await Promise.all([
+    (tab === 'all' || tab === 'following')
+      ? apiFetch<{ posts: any[] }>(
+          tab === 'following' ? '/posts?following=true&limit=40' : '/posts?limit=40',
+          {}, token
+        ).catch(() => ({ posts: [] }))
+      : Promise.resolve({ posts: [] }),
+    tab === 'reports'
+      ? apiFetch<{ reports: any[] }>('/reports?limit=20', {}, token).catch(() => ({ reports: [] }))
+      : Promise.resolve({ reports: [] }),
     tab === 'all' ? getNews().catch(() => []) : Promise.resolve([]),
   ]);
+
   const posts = postsData?.posts ?? [];
+  const reports = reportsData?.reports ?? [];
   const news2 = (news as any[]) ?? [];
 
-  const feed: Array<{ kind: 'post' | 'news'; data: any }> = [];
+  const feed: Array<{ kind: 'post' | 'news' | 'report'; data: any }> = [];
   if (tab === 'all') {
-    const p = posts;
-    const n = news2;
     let pi = 0, ni = 0;
-    while (pi < p.length || ni < n.length) {
-      for (let k = 0; k < 3 && pi < p.length; k++) feed.push({ kind: 'post', data: p[pi++] });
-      if (ni < n.length) feed.push({ kind: 'news', data: n[ni++] });
+    while (pi < posts.length || ni < news2.length) {
+      for (let k = 0; k < 3 && pi < posts.length; k++) feed.push({ kind: 'post', data: posts[pi++] });
+      if (ni < news2.length) feed.push({ kind: 'news', data: news2[ni++] });
     }
-  } else {
+  } else if (tab === 'following') {
     posts.forEach(p => feed.push({ kind: 'post', data: p }));
+  } else {
+    reports.forEach(r => feed.push({ kind: 'report', data: r }));
   }
+
+  const tabs = [
+    { key: 'all', label: 'Все посты' },
+    { key: 'reports', label: '📋 Отчёты' },
+    ...(token ? [{ key: 'following', label: 'Подписки' }] : []),
+  ];
 
   return (
     <div className="min-h-screen pb-24">
@@ -46,57 +63,48 @@ export default async function FeedPage({
             <h1 className="font-display text-3xl leading-none text-ink">ENDURO WORLD</h1>
             <p className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">Global Enduro Community</p>
           </div>
-          {token ? (
-            <Link href="/new" className="btn btn-secondary text-xs">+ Post</Link>
-          ) : (
-            <Link href="/login" className="btn btn-primary text-xs">Sign in</Link>
-          )}
+          <div className="flex gap-2">
+            {token && <Link href="/reports/new" className="btn btn-ghost text-xs">📋 Отчёт</Link>}
+            {token ? (
+              <Link href="/new" className="btn btn-secondary text-xs">+ Пост</Link>
+            ) : (
+              <Link href="/login" className="btn btn-primary text-xs">Войти</Link>
+            )}
+          </div>
         </div>
 
         {/* Tab bar */}
-        {token && (
-          <div className="max-w-xl mx-auto px-4 flex gap-1 pb-2">
+        <div className="max-w-xl mx-auto px-4 flex gap-1 pb-2">
+          {tabs.map(t => (
             <Link
-              href="/"
+              key={t.key}
+              href={t.key === 'all' ? '/' : `/?tab=${t.key}`}
               className={'text-xs font-semibold px-3 py-1 rounded-full transition-colors ' +
-                (tab === 'all' ? 'bg-moss/20 text-moss-strong' : 'text-muted hover:text-ink')}
+                (tab === t.key ? 'bg-moss/20 text-moss-strong' : 'text-muted hover:text-ink')}
             >
-              All rides
+              {t.label}
             </Link>
-            <Link
-              href="/?tab=following"
-              className={'text-xs font-semibold px-3 py-1 rounded-full transition-colors ' +
-                (tab === 'following' ? 'bg-moss/20 text-moss-strong' : 'text-muted hover:text-ink')}
-            >
-              Following
-            </Link>
-          </div>
-        )}
+          ))}
+        </div>
       </header>
 
       <main className="max-w-xl mx-auto px-4 py-4 space-y-4">
         {feed.length === 0 ? (
           <div className="text-center py-16 text-muted">
             {tab === 'following' ? (
-              <>
-                <p className="text-lg mb-2">No posts from followed riders yet</p>
-                <p className="text-sm">Follow other riders to see their rides here.</p>
-              </>
+              <><p className="text-lg mb-2">Нет постов от подписок</p><p className="text-sm">Подпишись на других райдеров.</p></>
+            ) : tab === 'reports' ? (
+              <><p className="text-lg mb-2">Пока нет отчётов</p><p className="text-sm">Будь первым — расскажи о своей поездке.</p>
+              {token && <Link href="/reports/new" className="btn btn-primary mt-4 inline-block">Написать отчёт</Link>}</>
             ) : (
-              <>
-                <p className="text-lg mb-2">The trail is quiet</p>
-                <p className="text-sm">Be the first to share your ride.</p>
-              </>
+              <><p className="text-lg mb-2">Лента пуста</p><p className="text-sm">Поделись своей поездкой.</p></>
             )}
-            <Link href={token ? '/new' : '/login'} className="btn btn-primary mt-4">
-              {token ? 'Create post' : 'Sign in to post'}
-            </Link>
           </div>
         ) : (
           feed.map((item, idx) =>
-            item.kind === 'post'
-              ? <PostCard key={'p' + item.data.id} post={item.data} isLoggedIn={!!token} />
-              : <NewsCard key={'n' + idx} item={item.data} />
+            item.kind === 'post' ? <PostCard key={'p' + item.data.id} post={item.data} isLoggedIn={!!token} />
+            : item.kind === 'report' ? <ReportCard key={'r' + item.data.id} report={item.data} />
+            : <NewsCard key={'n' + idx} item={item.data} />
           )
         )}
       </main>
