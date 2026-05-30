@@ -9,13 +9,15 @@ import (
 )
 
 func RegisterRoutes(router fiber.Router, h *handler.UserHandler, jwtManager *jwtutil.Manager) {
-	// Public read endpoints
-	router.Get("/users/:id", h.GetByID)
-	router.Get("/users", h.List)
+	auth := middleware.Auth(jwtManager)
 
-	// Protected write endpoints
-	users := router.Group("/users", middleware.Auth(jwtManager))
-	users.Post("/", h.Create)
-	users.Patch("/:id", h.Update)
-	users.Delete("/:id", h.Delete)
+	// Public read
+	router.Get("/users", h.List)
+	router.Get("/users/:id", h.GetByID)
+
+	// Protected — own profile
+	router.Get("/users/me", auth, h.GetMe)
+	router.Post("/users", auth, h.Create)
+	router.Patch("/users/:id", auth, h.Update)
+	router.Delete("/users/:id", auth, h.Delete)
 }

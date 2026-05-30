@@ -73,15 +73,51 @@ export default async function MePage() {
         <div className="h-24 bg-gradient-to-br from-moss/30 via-moss/10 to-transparent" />
         <div className="max-w-xl mx-auto px-4">
           <div className="flex items-end gap-4 -mt-8">
-            <div className="w-20 h-20 rounded-full bg-moss/20 text-moss-strong border-4 border-bg-base flex items-center justify-center text-2xl font-bold shadow-lg">
-              {initials}
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              {userInfo?.avatar_url ? (
+                <img src={userInfo.avatar_url} alt="" className="w-20 h-20 rounded-full object-cover border-4 border-base shadow-lg" />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-moss/20 text-moss-strong border-4 border-base flex items-center justify-center text-2xl font-bold shadow-lg">
+                  {initials}
+                </div>
+              )}
+              {userInfo?.is_verified && (
+                <span className="absolute -bottom-1 -right-1 bg-moss-strong text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">✓</span>
+              )}
             </div>
             <div className="pb-1 flex-1 min-w-0">
-              <div className="font-display text-2xl leading-none">{userName}</div>
-              <div className="text-xs text-muted mt-0.5">{userInfo?.email}</div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="font-display text-2xl leading-none">{userName}</div>
+                {userInfo?.account_type === 'business' && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rust/15 text-rust-strong">Бизнес</span>
+                )}
+              </div>
+              {userInfo?.business_name && (
+                <div className="text-sm text-muted font-semibold mt-0.5">{userInfo.business_name}</div>
+              )}
+              {userInfo?.bio && (
+                <p className="text-xs text-muted mt-1 leading-relaxed line-clamp-2">{userInfo.bio}</p>
+              )}
+              {/* Social links */}
+              {(userInfo?.telegram || userInfo?.instagram) && (
+                <div className="flex gap-2 mt-1.5 flex-wrap">
+                  {userInfo?.telegram && (
+                    <a href={`https://t.me/${userInfo.telegram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                      className="text-[10px] text-moss-strong hover:underline">✈️ {userInfo.telegram}</a>
+                  )}
+                  {userInfo?.instagram && (
+                    <a href={`https://instagram.com/${userInfo.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                      className="text-[10px] text-moss-strong hover:underline">📸 {userInfo.instagram}</a>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="pb-1">
+            <div className="pb-1 flex flex-col items-end gap-1.5">
               <SignOutButton />
+              <Link href="/me/edit" className="text-xs text-muted hover:text-ink border border-line rounded-lg px-2.5 py-1 hover:border-moss/40 transition-colors">
+                ✏️ Изменить
+              </Link>
             </div>
           </div>
 

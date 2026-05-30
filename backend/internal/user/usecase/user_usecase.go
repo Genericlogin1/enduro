@@ -111,15 +111,29 @@ func (u *userUsecase) Update(ctx context.Context, id uuid.UUID, req dto.UpdateUs
 		return dto.UserResponse{}, err
 	}
 
-	if req.Name != nil {
-		user.Name = *req.Name
-	}
+	if req.Name != nil { user.Name = *req.Name }
 	if req.Email != nil {
 		if err := validator.New().Required("email", *req.Email).Email("email", *req.Email).Validate(); err != nil {
 			return dto.UserResponse{}, apperrors.New(apperrors.ErrInvalidInput, "INVALID_INPUT", err.Error())
 		}
 		user.Email = *req.Email
 	}
+	if req.AccountType != nil {
+		if *req.AccountType == entity.AccountBusiness {
+			user.AccountType = entity.AccountBusiness
+			user.IsBusiness = true
+		} else {
+			user.AccountType = entity.AccountPersonal
+			user.IsBusiness = false
+		}
+	}
+	if req.BusinessName != nil { user.BusinessName = *req.BusinessName }
+	if req.BusinessType != nil { user.BusinessType = *req.BusinessType }
+	if req.Telegram != nil    { user.Telegram = *req.Telegram }
+	if req.WhatsApp != nil    { user.WhatsApp = *req.WhatsApp }
+	if req.Instagram != nil   { user.Instagram = *req.Instagram }
+	if req.Bio != nil         { user.Bio = *req.Bio }
+	if req.AvatarURL != nil   { user.AvatarURL = *req.AvatarURL }
 	user.UpdatedAt = time.Now().UTC()
 
 	if err := u.repo.Update(ctx, user); err != nil {

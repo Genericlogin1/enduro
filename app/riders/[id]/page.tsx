@@ -37,18 +37,68 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="min-h-screen pb-24">
-      <header className="px-4 py-6 border-b border-line">
-        <div className="max-w-xl mx-auto flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center text-xl font-semibold">
-            {initials}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-display text-2xl leading-none">{name}</div>
-            <div className="text-sm text-muted mt-1">
-              {posts.length} post{posts.length !== 1 ? 's' : ''} · {routes.length} route{routes.length !== 1 ? 's' : ''}
+      <header className="px-4 py-5 border-b border-line">
+        <div className="max-w-xl mx-auto">
+          <div className="flex items-start gap-4">
+            {/* Avatar */}
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-line flex-shrink-0" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center text-xl font-semibold flex-shrink-0">
+                {initials}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="font-display text-2xl leading-none">{name}</div>
+                {user?.is_verified && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-moss/15 text-moss-strong">✓ Верифицировано</span>}
+                {user?.account_type === 'business' && !user?.is_verified && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rust/15 text-rust-strong">Бизнес</span>
+                )}
+              </div>
+              {user?.business_name && (
+                <div className="text-sm font-semibold text-muted mt-0.5">{user.business_name}</div>
+              )}
+              {user?.bio && (
+                <p className="text-xs text-muted mt-1.5 leading-relaxed">{user.bio}</p>
+              )}
+              <div className="text-xs text-muted mt-1.5">
+                {posts.length} постов · {routes.length} маршрутов
+              </div>
+              {/* Social links */}
+              {(user?.telegram || user?.whatsapp || user?.instagram) && (
+                <div className="flex gap-3 mt-2 flex-wrap">
+                  {user?.telegram && (
+                    <a href={`https://t.me/${user.telegram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full text-white" style={{ background: '#229ED9' }}>
+                      ✈️ {user.telegram}
+                    </a>
+                  )}
+                  {user?.whatsapp && (
+                    <a href={`https://wa.me/${user.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full text-white" style={{ background: '#25D366' }}>
+                      📱 WA
+                    </a>
+                  )}
+                  {user?.instagram && (
+                    <a href={`https://instagram.com/${user.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-moss-strong hover:underline">📸 {user.instagram}</a>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="flex-shrink-0">
+              <FollowButton targetId={id} />
             </div>
           </div>
-          <FollowButton targetId={id} />
+          {/* Organizer tours if business */}
+          {user?.account_type === 'business' && (
+            <div className="mt-3">
+              <Link href={`/tours?organizer_id=${id}`} className="text-xs text-rust-strong hover:underline font-semibold">
+                🏕️ Смотреть туры организатора →
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 

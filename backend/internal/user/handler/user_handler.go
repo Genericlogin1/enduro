@@ -30,6 +30,19 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 	return response.Created(c, resp)
 }
 
+// GetMe returns the authenticated user's own profile.
+func (h *UserHandler) GetMe(c *fiber.Ctx) error {
+	callerID, ok := middleware.UserIDFromCtx(c)
+	if !ok {
+		return response.Error(c, fiber.ErrUnauthorized)
+	}
+	resp, err := h.uc.GetByID(c.UserContext(), callerID)
+	if err != nil {
+		return response.Error(c, err)
+	}
+	return response.OK(c, resp)
+}
+
 func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -61,12 +74,10 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c, fiber.ErrBadRequest)
 	}
-
 	callerID, ok := middleware.UserIDFromCtx(c)
 	if !ok || callerID != id {
 		return response.Error(c, fiber.ErrForbidden)
 	}
-
 	var req dto.UpdateUserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return response.Error(c, fiber.ErrBadRequest)
@@ -83,12 +94,10 @@ func (h *UserHandler) Delete(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c, fiber.ErrBadRequest)
 	}
-
 	callerID, ok := middleware.UserIDFromCtx(c)
 	if !ok || callerID != id {
 		return response.Error(c, fiber.ErrForbidden)
 	}
-
 	if err := h.uc.Delete(c.UserContext(), id); err != nil {
 		return response.Error(c, err)
 	}
