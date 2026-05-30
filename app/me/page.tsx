@@ -85,7 +85,7 @@ export default async function MePage() {
                 const mins = Math.round((s.duration_sec || 0) / 60);
                 const km = s.distance_km != null ? s.distance_km.toFixed(1) : null;
                 return (
-                  <div key={s.id} className="card p-3 flex items-center justify-between gap-3">
+                  <Link key={s.id} href={`/gps/sessions/${s.id}`} className="card p-3 flex items-center justify-between gap-3 hover:border-moss/40 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm truncate">{s.name || 'Unnamed ride'}</div>
                       <div className="text-xs text-muted mt-0.5">
@@ -97,7 +97,7 @@ export default async function MePage() {
                     <span className={`chip ${s.status === 'active' ? 'chip-rust' : ''}`}>
                       {s.status === 'active' ? 'live' : 'done'}
                     </span>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
