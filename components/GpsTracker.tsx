@@ -105,8 +105,15 @@ export default function GpsTracker() {
       setLastPoint(null);
 
       watchRef.current = navigator.geolocation.watchPosition(
-        onPosition,
-        (err) => setGeoError(err.message),
+        (pos) => { setGeoError(null); onPosition(pos); },
+        (err) => {
+          const msg = err.code === 1
+            ? 'Location access denied — please allow it in browser settings'
+            : err.code === 2
+            ? 'GPS unavailable. Try on a mobile device or check your location settings'
+            : 'Location timed out — move to a better signal area';
+          setGeoError(msg);
+        },
         { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
       );
 
@@ -217,6 +224,12 @@ export default function GpsTracker() {
               <p className="text-sm text-muted">{pointCount} points • syncs every 5s</p>
             </div>
 
+            {geoError && (
+              <div className="text-xs text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2 text-center">
+                ⚠️ {geoError}
+              </div>
+            )}
+
             {lastPoint && (
               <div className="bg-zinc-900 rounded-lg p-3 text-xs text-muted font-mono space-y-1">
                 <div>Lat: {lastPoint.lat.toFixed(6)}</div>
@@ -243,7 +256,7 @@ export default function GpsTracker() {
       {error && (
         <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>
       )}
-      {geoError && (
+      {geoError && status === 'idle' && (
         <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">
           GPS: {geoError}
         </div>
@@ -253,6 +266,7 @@ export default function GpsTracker() {
         <div className="card p-4 space-y-2 text-sm text-muted">
           <p className="font-semibold text-ink">How it works</p>
           <ul className="space-y-1 list-disc list-inside">
+            <li>Works best on a <strong>mobile device</strong> with GPS</li>
             <li>Allow location access when prompted</li>
             <li>Points collected every second, synced every 5s</li>
             <li>Keep the screen on during your ride</li>
