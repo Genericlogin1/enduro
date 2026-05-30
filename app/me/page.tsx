@@ -46,11 +46,13 @@ export default async function MePage() {
     userId = payload.user_id || payload.sub || '';
   } catch {}
 
-  const [posts, routes, userInfo] = await Promise.all([
-    userId ? apiFetch<any[]>(`/posts?author_id=${userId}&limit=20`, {}, token).catch(() => []) : [],
-    userId ? apiFetch<any[]>(`/routes?author_id=${userId}&limit=20`, {}, token).catch(() => []) : [],
+  const [postsData, routesData, userInfo] = await Promise.all([
+    userId ? apiFetch<{ posts: any[] }>(`/posts?author_id=${userId}&limit=20`, {}, token).catch(() => ({ posts: [] })) : { posts: [] },
+    userId ? apiFetch<{ routes: any[] }>(`/routes?author_id=${userId}&limit=20`, {}, token).catch(() => ({ routes: [] })) : { routes: [] },
     userId ? apiFetch<any>(`/users/${userId}`, {}, token).catch(() => null) : null,
   ]);
+  const posts = postsData?.posts ?? [];
+  const routes = routesData?.routes ?? [];
 
   userName = userInfo?.name || 'Rider';
   const initials = userName.slice(0, 2).toUpperCase();

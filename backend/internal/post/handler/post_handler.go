@@ -48,6 +48,19 @@ func (h *PostHandler) List(c *fiber.Ctx) error {
 	limit := c.QueryInt("limit", 20)
 	offset := c.QueryInt("offset", 0)
 	callerID, _ := middleware.UserIDFromCtx(c)
+
+	if authorIDStr := c.Query("author_id"); authorIDStr != "" {
+		authorID, err := uuid.Parse(authorIDStr)
+		if err != nil {
+			return response.Error(c, fiber.ErrBadRequest)
+		}
+		resp, err := h.uc.ListByAuthor(c.UserContext(), authorID, limit, offset, callerID)
+		if err != nil {
+			return response.Error(c, err)
+		}
+		return response.OK(c, fiber.Map{"posts": resp})
+	}
+
 	resp, err := h.uc.List(c.UserContext(), limit, offset, callerID)
 	if err != nil {
 		return response.Error(c, err)

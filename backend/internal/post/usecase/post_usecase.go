@@ -16,6 +16,7 @@ type PostUsecase interface {
 	Create(ctx context.Context, authorID uuid.UUID, req dto.CreatePostRequest) (dto.PostResponse, error)
 	GetByID(ctx context.Context, id uuid.UUID, callerID uuid.UUID) (dto.PostResponse, error)
 	List(ctx context.Context, limit, offset int, callerID uuid.UUID) ([]dto.PostResponse, error)
+	ListByAuthor(ctx context.Context, authorID uuid.UUID, limit, offset int, callerID uuid.UUID) ([]dto.PostResponse, error)
 	Update(ctx context.Context, id, callerID uuid.UUID, req dto.UpdatePostRequest) (dto.PostResponse, error)
 	Delete(ctx context.Context, id, callerID uuid.UUID) error
 	ToggleLike(ctx context.Context, postID, userID uuid.UUID) error
@@ -73,6 +74,25 @@ func (u *postUsecase) List(ctx context.Context, limit, offset int, callerID uuid
 		limit = 20
 	}
 	posts, err := u.repo.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]dto.PostResponse, len(posts))
+	for i, p := range posts {
+		liked := false
+		if callerID != uuid.Nil {
+			liked, _ = u.repo.IsLiked(ctx, p.ID, callerID)
+		}
+		result[i] = dto.ToPostResponse(p, liked)
+	}
+	return result, nil
+}
+
+func (u *postUsecase) ListByAuthor(ctx context.Context, authorID uuid.UUID, limit, offset int, callerID uuid.UUID) ([]dto.PostResponse, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	posts, err := u.repo.ListByAuthor(ctx, authorID, limit, offset)
 	if err != nil {
 		return nil, err
 	}

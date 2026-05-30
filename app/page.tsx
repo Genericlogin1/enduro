@@ -12,10 +12,11 @@ export const dynamic = 'force-dynamic';
 export default async function FeedPage() {
   const token = await getServerToken();
 
-  const [posts, news] = await Promise.all([
-    apiFetch<any[]>('/posts?limit=40', {}, token).catch(() => []),
+  const [postsData, news] = await Promise.all([
+    apiFetch<{ posts: any[] }>('/posts?limit=40', {}, token).catch(() => ({ posts: [] })),
     getNews().catch(() => []),
   ]);
+  const posts = postsData?.posts ?? [];
 
   const feed: Array<{ kind: 'post' | 'news'; data: any }> = [];
   const p = posts || [];

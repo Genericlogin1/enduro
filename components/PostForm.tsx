@@ -20,6 +20,7 @@ export default function PostForm() {
       fd.set('location', location);
       await createPost(fd);
     } catch (e: any) {
+      if (e?.digest?.startsWith('NEXT_REDIRECT')) throw e;
       setError(e.message || 'Failed to post');
       setSubmitting(false);
     }
