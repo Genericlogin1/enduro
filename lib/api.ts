@@ -20,14 +20,16 @@ export async function apiFetch<T = any>(
   const res = await fetch(API_BASE + path, { ...options, headers, cache: 'no-store' });
 
   if (res.status === 401) {
-    // Token invalid — clear session and redirect to login
-    if (typeof window !== 'undefined') {
+    // Only auto-logout if we're not already on an auth page
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/signup')) {
       localStorage.removeItem('enduro_token');
       localStorage.removeItem('enduro_user');
       document.cookie = 'enduro_token=; path=/; max-age=0';
       window.location.href = '/login';
     }
-    throw new ApiError('UNAUTHORIZED', 'Session expired. Please sign in again.', 401);
+    const body = await res.json().catch(() => ({}));
+    const err = body?.error;
+    throw new ApiError(err?.code || 'UNAUTHORIZED', err?.message || 'Invalid email or password', 401);
   }
 
   if (!res.ok) {

@@ -62,6 +62,7 @@ function LoginForm() {
         </button>
         <div className="flex items-center justify-between text-sm">
           <Link href="/" className="text-muted hover:text-ink hover:underline">Back to feed</Link>
+          <Link href="/forgot-password" className="text-muted hover:text-moss-strong hover:underline">Forgot password?</Link>
         </div>
         <p className="text-center text-sm text-muted">
           No account? <Link href="/signup" className="text-moss-strong hover:underline">Sign up</Link>
