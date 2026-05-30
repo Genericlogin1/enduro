@@ -18,6 +18,7 @@ type UserUsecase interface {
 	Create(ctx context.Context, req dto.CreateUserRequest) (dto.UserResponse, error)
 	GetByID(ctx context.Context, id uuid.UUID) (dto.UserResponse, error)
 	List(ctx context.Context, limit, offset int) ([]dto.UserResponse, error)
+	Search(ctx context.Context, query string, limit int) ([]dto.UserResponse, error)
 	Update(ctx context.Context, id uuid.UUID, req dto.UpdateUserRequest) (dto.UserResponse, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -89,6 +90,15 @@ func (u *userUsecase) List(ctx context.Context, limit, offset int) ([]dto.UserRe
 	for i, user := range users {
 		result[i] = dto.ToUserResponse(user)
 	}
+	return result, nil
+}
+
+func (u *userUsecase) Search(ctx context.Context, query string, limit int) ([]dto.UserResponse, error) {
+	if limit <= 0 || limit > 50 { limit = 20 }
+	users, err := u.repo.Search(ctx, query, limit)
+	if err != nil { return nil, err }
+	result := make([]dto.UserResponse, len(users))
+	for i, user := range users { result[i] = dto.ToUserResponse(user) }
 	return result, nil
 }
 

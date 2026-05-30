@@ -13,6 +13,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 	GetByEmail(ctx context.Context, email string) (*entity.User, error)
 	List(ctx context.Context, limit, offset int) ([]*entity.User, error)
+	Search(ctx context.Context, query string, limit int) ([]*entity.User, error)
 	Update(ctx context.Context, u *entity.User) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }

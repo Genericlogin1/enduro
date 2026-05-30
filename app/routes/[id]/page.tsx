@@ -1,0 +1,111 @@
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import Nav from '@/components/Nav';
+import { apiFetch } from '@/lib/api';
+
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const route = await apiFetch<any>(`/routes/${params.id}`).catch(() => null);
+  if (!route) return { title: 'Маршрут не найден' };
+  const desc = [route.country, route.difficulty, route.distance_km ? `${route.distance_km} km` : null]
+    .filter(Boolean).join(' · ');
+  return {
+    title: `${route.name} | Enduro World`,
+    description: route.description || `Эндуро маршрут: ${route.name}. ${desc}`,
+  };
+}
+
+const diffColor: Record<string, string> = {
+  Easy: 'chip bg-green-400/15 text-green-400',
+  Medium: 'chip bg-yellow-400/15 text-yellow-400',
+  Hard: 'chip bg-orange-400/15 text-orange-400',
+  Expert: 'chip bg-red-400/15 text-red-400',
+};
+
+export default async function RouteDetailPage({ params }: { params: { id: string } }) {
+  const route = await apiFetch<any>(`/routes/${params.id}`).catch(() => null);
+  if (!route) notFound();
+
+  const author = route.author_name || 'Rider';
+  const initials = author.slice(0, 2).toUpperCase();
+
+  // Schema.org structured data for SEO
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsEvent',
+    name: route.name,
+    description: route.description || `Эндуро маршрут ${route.name}`,
+    location: { '@type': 'Place', name: route.country || route.region || 'Unknown' },
+    sport: 'Enduro Motorcycle',
+  };
+
+  return (
+    <div className="min-h-screen pb-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+
+      <header className="px-4 py-4 border-b border-line">
+        <div className="max-w-xl mx-auto">
+          <Link href="/map" className="text-xs text-muted hover:text-ink mb-3 inline-block">← Все маршруты</Link>
+          <h1 className="font-display text-3xl leading-tight">{route.name}</h1>
+        </div>
+      </header>
+
+      <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
+        {/* Author */}
+        <div className="flex items-center gap-3">
+          <Link href={`/riders/${route.author_id}`}>
+            <div className="w-9 h-9 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center text-sm font-bold">{initials}</div>
+          </Link>
+          <Link href={`/riders/${route.author_id}`} className="font-semibold text-sm hover:text-moss-strong">{author}</Link>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-3 gap-3">
+          {route.distance_km != null && (
+            <div className="card p-3 text-center">
+              <div className="font-display text-xl">{route.distance_km}</div>
+              <div className="text-[10px] text-muted uppercase tracking-wider">km</div>
+            </div>
+          )}
+          {route.difficulty && (
+            <div className="card p-3 text-center">
+              <div className={`font-bold text-sm ${diffColor[route.difficulty]?.includes('green') ? 'text-green-400' : diffColor[route.difficulty]?.includes('yellow') ? 'text-yellow-400' : diffColor[route.difficulty]?.includes('orange') ? 'text-orange-400' : 'text-red-400'}`}>
+                {route.difficulty}
+              </div>
+              <div className="text-[10px] text-muted uppercase tracking-wider">Сложность</div>
+            </div>
+          )}
+          {route.country && (
+            <div className="card p-3 text-center">
+              <div className="font-semibold text-sm truncate">{route.country}</div>
+              <div className="text-[10px] text-muted uppercase tracking-wider">Страна</div>
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        {route.description && (
+          <div className="card p-4">
+            <h2 className="font-display text-lg mb-2">Описание</h2>
+            <p className="text-sm text-ink/90 leading-relaxed whitespace-pre-wrap">{route.description}</p>
+          </div>
+        )}
+
+        {/* Map preview placeholder */}
+        <div className="card p-4">
+          <h2 className="font-display text-lg mb-2">Карта</h2>
+          <Link href="/map" className="btn btn-ghost w-full text-sm">
+            Открыть на карте →
+          </Link>
+        </div>
+
+        {/* Meta */}
+        <div className="text-xs text-muted">
+          Добавлен {new Date(route.created_at).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </div>
+      </div>
+      <Nav />
+    </div>
+  );
+}

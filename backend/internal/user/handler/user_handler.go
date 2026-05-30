@@ -45,10 +45,14 @@ func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 func (h *UserHandler) List(c *fiber.Ctx) error {
 	limit := c.QueryInt("limit", 20)
 	offset := c.QueryInt("offset", 0)
-	resp, err := h.uc.List(c.UserContext(), limit, offset)
-	if err != nil {
-		return response.Error(c, err)
+	q := c.Query("search")
+	if q != "" {
+		resp, err := h.uc.Search(c.UserContext(), q, limit)
+		if err != nil { return response.Error(c, err) }
+		return response.OK(c, fiber.Map{"users": resp})
 	}
+	resp, err := h.uc.List(c.UserContext(), limit, offset)
+	if err != nil { return response.Error(c, err) }
 	return response.OK(c, fiber.Map{"users": resp})
 }
 

@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS tour_registrations;
+DROP TABLE IF EXISTS tours;
+ALTER TABLE users DROP COLUMN IF EXISTS is_business;
+ALTER TABLE users DROP COLUMN IF EXISTS is_verified;
+ALTER TABLE users DROP COLUMN IF EXISTS business_name;
+ALTER TABLE users DROP COLUMN IF EXISTS business_type;

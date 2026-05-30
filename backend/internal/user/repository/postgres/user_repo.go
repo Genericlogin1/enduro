@@ -94,6 +94,23 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]*entity
 	return users, rows.Err()
 }
 
+func (r *userRepository) Search(ctx context.Context, query string, limit int) ([]*entity.User, error) {
+	q := `SELECT id, email, password_hash, name, created_at, updated_at
+	      FROM users WHERE name ILIKE $1 OR email ILIKE $1 ORDER BY name LIMIT $2`
+	rows, err := r.q(ctx).Query(ctx, q, "%"+query+"%", limit)
+	if err != nil { return nil, err }
+	defer rows.Close()
+	var users []*entity.User
+	for rows.Next() {
+		u := &entity.User{}
+		if err := rows.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.CreatedAt, &u.UpdatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
 func (r *userRepository) Update(ctx context.Context, u *entity.User) error {
 	q := `UPDATE users SET email=$1, name=$2, updated_at=$3 WHERE id=$4`
 	tag, err := r.q(ctx).Exec(ctx, q, u.Email, u.Name, u.UpdatedAt, u.ID)
