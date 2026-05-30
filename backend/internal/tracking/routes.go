@@ -9,13 +9,18 @@ import (
 )
 
 func RegisterRoutes(router fiber.Router, h *handler.TrackingHandler, jwtManager *jwtutil.Manager) {
-	tr := router.Group("/tracking", middleware.Auth(jwtManager))
-	tr.Get("/sessions", h.ListSessions)
-	tr.Post("/sessions", h.StartSession)
-	tr.Patch("/sessions/:id/finish", h.FinishSession)
-	tr.Get("/sessions/:id", h.GetSession)
-	tr.Post("/sessions/:id/points", h.AddPoints)
+	auth := middleware.Auth(jwtManager)
+
+	// Protected routes — require JWT
+	router.Get("/tracking/sessions", auth, h.ListSessions)
+	router.Post("/tracking/sessions", auth, h.StartSession)
+	router.Patch("/tracking/sessions/:id/finish", auth, h.FinishSession)
+	router.Get("/tracking/sessions/:id", auth, h.GetSession)
+	router.Post("/tracking/sessions/:id/points", auth, h.AddPoints)
 
 	// WebSocket — auth via ?token= query param
 	router.Get("/tracking/ws", h.WSUpgrade, h.WSHandler())
+
+	// Public: live view by share token (no auth required)
+	router.Get("/tracking/live/:token", h.LiveSession)
 }

@@ -7,14 +7,15 @@ import (
 )
 
 type TrackSession struct {
-	ID         uuid.UUID
-	UserID     uuid.UUID
-	RouteID    *uuid.UUID
-	Name       string
-	Status     string
-	StartedAt  time.Time
-	FinishedAt *time.Time
-	CreatedAt  time.Time
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	RouteID     *uuid.UUID
+	Name        string
+	Status      string
+	ShareToken  string
+	StartedAt   time.Time
+	FinishedAt  *time.Time
+	CreatedAt   time.Time
 }
 
 type TrackPoint struct {

@@ -37,22 +37,33 @@ func (r *trackingRepository) q(ctx context.Context) querier {
 	return r.pool
 }
 
-func (r *trackingRepository) CreateSession(ctx context.Context, s *entity.TrackSession) error {
-	_, err := r.q(ctx).Exec(ctx,
-		`INSERT INTO track_sessions (id,user_id,route_id,name,status,started_at,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-		s.ID, s.UserID, s.RouteID, s.Name, s.Status, s.StartedAt, s.CreatedAt)
-	return err
-}
+const sessionCols = `id,user_id,route_id,name,status,share_token,started_at,finished_at,created_at`
 
-func (r *trackingRepository) GetSession(ctx context.Context, id uuid.UUID) (*entity.TrackSession, error) {
+func scanSession(row pgx.Row) (*entity.TrackSession, error) {
 	s := &entity.TrackSession{}
-	err := r.q(ctx).QueryRow(ctx,
-		`SELECT id,user_id,route_id,name,status,started_at,finished_at,created_at FROM track_sessions WHERE id=$1`, id,
-	).Scan(&s.ID, &s.UserID, &s.RouteID, &s.Name, &s.Status, &s.StartedAt, &s.FinishedAt, &s.CreatedAt)
+	err := row.Scan(&s.ID, &s.UserID, &s.RouteID, &s.Name, &s.Status, &s.ShareToken, &s.StartedAt, &s.FinishedAt, &s.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, apperrors.ErrNotFound
 	}
 	return s, err
+}
+
+func (r *trackingRepository) CreateSession(ctx context.Context, s *entity.TrackSession) error {
+	return r.q(ctx).QueryRow(ctx,
+		`INSERT INTO track_sessions (id,user_id,route_id,name,status,started_at,created_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING share_token`,
+		s.ID, s.UserID, s.RouteID, s.Name, s.Status, s.StartedAt, s.CreatedAt,
+	).Scan(&s.ShareToken)
+}
+
+func (r *trackingRepository) GetSession(ctx context.Context, id uuid.UUID) (*entity.TrackSession, error) {
+	return scanSession(r.q(ctx).QueryRow(ctx,
+		`SELECT `+sessionCols+` FROM track_sessions WHERE id=$1`, id))
+}
+
+func (r *trackingRepository) GetSessionByShareToken(ctx context.Context, token string) (*entity.TrackSession, error) {
+	return scanSession(r.q(ctx).QueryRow(ctx,
+		`SELECT `+sessionCols+` FROM track_sessions WHERE share_token=$1`, token))
 }
 
 func (r *trackingRepository) FinishSession(ctx context.Context, id uuid.UUID, finishedAt interface{}) error {
@@ -75,9 +86,21 @@ func (r *trackingRepository) AddPoint(ctx context.Context, p *entity.TrackPoint)
 	return err
 }
 
+func (r *trackingRepository) GetLastPoint(ctx context.Context, sessionID uuid.UUID) (*entity.TrackPoint, error) {
+	p := &entity.TrackPoint{}
+	err := r.q(ctx).QueryRow(ctx,
+		`SELECT id,session_id,lat,lng,altitude,speed,recorded_at FROM track_points
+		 WHERE session_id=$1 ORDER BY recorded_at DESC LIMIT 1`, sessionID,
+	).Scan(&p.ID, &p.SessionID, &p.Lat, &p.Lng, &p.Altitude, &p.Speed, &p.RecordedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	return p, err
+}
+
 func (r *trackingRepository) ListSessions(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*entity.TrackSession, error) {
 	rows, err := r.q(ctx).Query(ctx,
-		`SELECT id,user_id,route_id,name,status,started_at,finished_at,created_at FROM track_sessions WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+		`SELECT `+sessionCols+` FROM track_sessions WHERE user_id=$1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
 		userID, limit, offset)
 	if err != nil {
 		return nil, err
@@ -86,7 +109,7 @@ func (r *trackingRepository) ListSessions(ctx context.Context, userID uuid.UUID,
 	var sessions []*entity.TrackSession
 	for rows.Next() {
 		s := &entity.TrackSession{}
-		if err := rows.Scan(&s.ID, &s.UserID, &s.RouteID, &s.Name, &s.Status, &s.StartedAt, &s.FinishedAt, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.UserID, &s.RouteID, &s.Name, &s.Status, &s.ShareToken, &s.StartedAt, &s.FinishedAt, &s.CreatedAt); err != nil {
 			return nil, err
 		}
 		sessions = append(sessions, s)
@@ -108,7 +131,6 @@ func (r *trackingRepository) ListPoints(ctx context.Context, sessionID uuid.UUID
 		return nil, err
 	}
 	defer rows.Close()
-
 	var points []*entity.TrackPoint
 	for rows.Next() {
 		p := &entity.TrackPoint{}

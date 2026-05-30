@@ -96,6 +96,16 @@ func (h *TrackingHandler) AddPoints(c *fiber.Ctx) error {
 	return response.OK(c, fiber.Map{"saved": saved})
 }
 
+// LiveSession returns current position by share token (public, no auth).
+func (h *TrackingHandler) LiveSession(c *fiber.Ctx) error {
+	token := c.Params("token")
+	resp, err := h.uc.GetLiveSession(c.UserContext(), token)
+	if err != nil {
+		return response.Error(c, err)
+	}
+	return response.OK(c, resp)
+}
+
 // WSUpgrade authenticates via ?token= query param and upgrades to WebSocket.
 func (h *TrackingHandler) WSUpgrade(c *fiber.Ctx) error {
 	if !websocket.IsWebSocketUpgrade(c) {

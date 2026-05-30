@@ -33,15 +33,24 @@ type TrackPointResponse struct {
 }
 
 type SessionResponse struct {
-	ID         uuid.UUID            `json:"id"`
-	UserID     uuid.UUID            `json:"user_id"`
-	RouteID    *uuid.UUID           `json:"route_id"`
+	ID          uuid.UUID            `json:"id"`
+	UserID      uuid.UUID            `json:"user_id"`
+	RouteID     *uuid.UUID           `json:"route_id"`
+	Name        string               `json:"name"`
+	Status      string               `json:"status"`
+	ShareToken  string               `json:"share_token"`
+	StartedAt   time.Time            `json:"started_at"`
+	FinishedAt  *time.Time           `json:"finished_at"`
+	CreatedAt   time.Time            `json:"created_at"`
+	Points      []TrackPointResponse `json:"points,omitempty"`
+}
+
+type LiveSessionResponse struct {
+	SessionID  uuid.UUID            `json:"session_id"`
 	Name       string               `json:"name"`
 	Status     string               `json:"status"`
 	StartedAt  time.Time            `json:"started_at"`
-	FinishedAt *time.Time           `json:"finished_at"`
-	CreatedAt  time.Time            `json:"created_at"`
-	Points     []TrackPointResponse `json:"points,omitempty"`
+	LastPoint  *TrackPointResponse  `json:"last_point"`
 }
 
 type SessionSummary struct {
@@ -57,7 +66,7 @@ type SessionSummary struct {
 func ToSessionResponse(s *entity.TrackSession, points []*entity.TrackPoint) SessionResponse {
 	resp := SessionResponse{
 		ID: s.ID, UserID: s.UserID, RouteID: s.RouteID,
-		Name: s.Name, Status: s.Status,
+		Name: s.Name, Status: s.Status, ShareToken: s.ShareToken,
 		StartedAt: s.StartedAt, FinishedAt: s.FinishedAt, CreatedAt: s.CreatedAt,
 	}
 	for _, p := range points {

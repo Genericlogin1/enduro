@@ -16,6 +16,7 @@ type TrackingUsecase interface {
 	StartSession(ctx context.Context, userID uuid.UUID, req dto.StartSessionRequest) (dto.SessionResponse, error)
 	FinishSession(ctx context.Context, sessionID, callerID uuid.UUID) (dto.SessionResponse, error)
 	GetSession(ctx context.Context, sessionID, callerID uuid.UUID) (dto.SessionResponse, error)
+	GetLiveSession(ctx context.Context, shareToken string) (dto.LiveSessionResponse, error)
 	ListSessions(ctx context.Context, userID uuid.UUID, limit, offset int) ([]dto.SessionSummary, error)
 	AddPoint(ctx context.Context, inp dto.TrackPointInput) (dto.TrackPointResponse, error)
 }
@@ -91,6 +92,28 @@ func (u *trackingUsecase) ListSessions(ctx context.Context, userID uuid.UUID, li
 		result[i] = dto.ToSessionSummary(s, count)
 	}
 	return result, nil
+}
+
+func (u *trackingUsecase) GetLiveSession(ctx context.Context, shareToken string) (dto.LiveSessionResponse, error) {
+	s, err := u.repo.GetSessionByShareToken(ctx, shareToken)
+	if err != nil {
+		return dto.LiveSessionResponse{}, err
+	}
+	last, _ := u.repo.GetLastPoint(ctx, s.ID)
+	resp := dto.LiveSessionResponse{
+		SessionID: s.ID, Name: s.Name,
+		Status: s.Status, StartedAt: s.StartedAt,
+	}
+	if last != nil {
+		p := dto.TrackPointResponse{
+			ID: last.ID, SessionID: last.SessionID,
+			Lat: last.Lat, Lng: last.Lng,
+			Altitude: last.Altitude, Speed: last.Speed,
+			RecordedAt: last.RecordedAt,
+		}
+		resp.LastPoint = &p
+	}
+	return resp, nil
 }
 
 func (u *trackingUsecase) AddPoint(ctx context.Context, inp dto.TrackPointInput) (dto.TrackPointResponse, error) {
