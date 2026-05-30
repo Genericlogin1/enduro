@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { createPost } from '@/app/actions';
+import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api';
+import { getToken } from '@/lib/token';
 
 export default function PostForm() {
+  const router = useRouter();
   const [content, setContent] = useState('');
   const [location, setLocation] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -15,12 +18,14 @@ export default function PostForm() {
     setError(null);
     setSubmitting(true);
     try {
-      const fd = new FormData();
-      fd.set('content', content);
-      fd.set('location', location);
-      await createPost(fd);
+      const token = getToken();
+      await apiFetch('/posts', {
+        method: 'POST',
+        body: JSON.stringify({ content, location: location.trim() || null, media_urls: [] }),
+      }, token);
+      router.push('/');
+      router.refresh();
     } catch (e: any) {
-      if (e?.digest?.startsWith('NEXT_REDIRECT')) throw e;
       setError(e.message || 'Failed to post');
       setSubmitting(false);
     }

@@ -5,7 +5,6 @@ import NewsCard from '@/components/NewsCard';
 import { getNews } from '@/lib/news';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
-import { toggleLike } from '@/app/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,7 +54,7 @@ export default async function FeedPage() {
         ) : (
           feed.map((item, idx) =>
             item.kind === 'post'
-              ? <PostCard key={'p' + item.data.id} post={item.data} isLoggedIn={!!token} toggleLikeAction={toggleLike} />
+              ? <PostCard key={'p' + item.data.id} post={item.data} isLoggedIn={!!token} />
               : <NewsCard key={'n' + idx} item={item.data} />
           )
         )}

@@ -1,6 +1,8 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { apiFetch } from '@/lib/api';
+import { getToken } from '@/lib/token';
 
 type Post = {
   id: string;
@@ -17,29 +19,34 @@ type Post = {
 export default function PostCard({
   post,
   isLoggedIn,
-  toggleLikeAction,
 }: {
   post: Post;
   isLoggedIn: boolean;
-  toggleLikeAction: (postId: string) => Promise<void>;
 }) {
   const [liked, setLiked] = useState(post.liked_by_me);
   const [count, setCount] = useState(post.likes_count);
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
   const author = post.author_name || 'rider';
   const initials = author.slice(0, 2).toUpperCase();
   const time = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
 
-  function handleLike() {
-    if (!isLoggedIn) return;
+  async function handleLike() {
+    if (!isLoggedIn || pending) return;
+    const token = getToken();
+    if (!token) return;
     const next = !liked;
     setLiked(next);
     setCount(c => c + (next ? 1 : -1));
-    startTransition(async () => {
-      try { await toggleLikeAction(post.id); }
-      catch { setLiked(!next); setCount(c => c + (next ? -1 : 1)); }
-    });
+    setPending(true);
+    try {
+      await apiFetch(`/posts/${post.id}/like`, { method: 'POST' }, token);
+    } catch {
+      setLiked(!next);
+      setCount(c => c + (next ? -1 : 1));
+    } finally {
+      setPending(false);
+    }
   }
 
   return (

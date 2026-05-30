@@ -3,7 +3,6 @@ import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
-import { toggleLike } from '@/app/actions';
 import SignOutButton from '@/components/SignOutButton';
 
 export const dynamic = 'force-dynamic';
@@ -114,7 +113,7 @@ export default async function MePage() {
           ) : (
             <div className="space-y-4">
               {posts.map((p: any) => (
-                <PostCard key={p.id} post={p} isLoggedIn={true} toggleLikeAction={toggleLike} />
+                <PostCard key={p.id} post={p} isLoggedIn={true} />
               ))}
             </div>
           )}
