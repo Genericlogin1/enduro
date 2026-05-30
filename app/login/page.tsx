@@ -3,7 +3,8 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { apiFetch } from '@/lib/api';
+import { setSession } from '@/lib/token';
 
 function LoginForm() {
   const router = useRouter();
@@ -11,20 +12,25 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(
-    params.get('error') === 'auth_callback' ? 'Email confirmation failed. Try again.' : null
-  );
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    router.push(params.get('next') || '/');
-    router.refresh();
+    try {
+      const data = await apiFetch<{ token: string; user: { id: string; name: string; email: string } }>(
+        '/auth/login',
+        { method: 'POST', body: JSON.stringify({ email, password }) },
+      );
+      setSession(data.token, data.user);
+      router.push(params.get('next') || '/');
+      router.refresh();
+    } catch (e: any) {
+      setError(e.message || 'Sign in failed');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -55,7 +61,6 @@ function LoginForm() {
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
         <div className="flex items-center justify-between text-sm">
-          <Link href="/forgot-password" className="text-muted hover:text-moss-strong hover:underline">Forgot password?</Link>
           <Link href="/" className="text-muted hover:text-ink hover:underline">Back to feed</Link>
         </div>
         <p className="text-center text-sm text-muted">

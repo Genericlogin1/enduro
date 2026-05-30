@@ -4,38 +4,35 @@ import { formatDistanceToNow } from 'date-fns';
 
 type Post = {
   id: string;
-  content: string | null;
-  media_urls: string[] | null;
+  content: string;
+  media_urls: string[];
   location: string | null;
   created_at: string;
   author_id: string;
-  profiles: { username: string | null; display_name: string | null; avatar_url: string | null } | null;
-  likes: { user_id: string }[];
-  comments: { id: string }[];
+  author_name: string;
+  likes_count: number;
+  liked_by_me: boolean;
 };
 
 export default function PostCard({
   post,
-  currentUserId,
+  isLoggedIn,
   toggleLikeAction,
 }: {
   post: Post;
-  currentUserId?: string;
+  isLoggedIn: boolean;
   toggleLikeAction: (postId: string) => Promise<void>;
 }) {
-  const initialLiked = !!currentUserId && post.likes.some(l => l.user_id === currentUserId);
-  const [liked, setLiked] = useState(initialLiked);
-  const [count, setCount] = useState(post.likes.length);
+  const [liked, setLiked] = useState(post.liked_by_me);
+  const [count, setCount] = useState(post.likes_count);
   const [pending, startTransition] = useTransition();
 
-  const author = post.profiles?.display_name || post.profiles?.username || 'rider';
-  const handle = post.profiles?.username ? '@' + post.profiles.username : '';
-  const avatar = post.profiles?.avatar_url;
-  const initials = (author || 'R').slice(0, 2).toUpperCase();
+  const author = post.author_name || 'rider';
+  const initials = author.slice(0, 2).toUpperCase();
   const time = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
 
   function handleLike() {
-    if (!currentUserId) return;
+    if (!isLoggedIn) return;
     const next = !liked;
     setLiked(next);
     setCount(c => c + (next ? 1 : -1));
@@ -48,13 +45,10 @@ export default function PostCard({
   return (
     <article className="card overflow-hidden">
       <header className="flex items-center gap-3 px-4 py-3">
-        {avatar
-          ? <img src={avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-          : <div className="w-10 h-10 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center font-semibold">{initials}</div>}
+        <div className="w-10 h-10 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center font-semibold">{initials}</div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold truncate">{author}</div>
           <div className="text-xs text-muted truncate">
-            {handle && <span>{handle} · </span>}
             {post.location && <span>{post.location} · </span>}
             <span>{time}</span>
           </div>
@@ -78,7 +72,7 @@ export default function PostCard({
       <footer className="flex items-center gap-5 px-4 py-3 border-t border-line text-sm">
         <button
           onClick={handleLike}
-          disabled={pending || !currentUserId}
+          disabled={pending || !isLoggedIn}
           className={'flex items-center gap-1.5 transition ' + (liked ? 'text-rust-strong' : 'text-muted hover:text-ink')}
         >
           <svg viewBox="0 0 20 20" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" className="w-5 h-5">
@@ -86,12 +80,6 @@ export default function PostCard({
           </svg>
           <span>{count}</span>
         </button>
-        <div className="flex items-center gap-1.5 text-muted">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" className="w-5 h-5">
-            <path strokeWidth="1.6" d="M4 6a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H9l-4 3v-3a2 2 0 01-1-1.7V6z" />
-          </svg>
-          <span>{post.comments.length}</span>
-        </div>
       </footer>
     </article>
   );

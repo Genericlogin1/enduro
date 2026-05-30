@@ -45,11 +45,11 @@ func (r *postRepository) Create(ctx context.Context, p *entity.Post) error {
 }
 
 func (r *postRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Post, error) {
-	q := `SELECT id, author_id, content, location, media_urls, likes_count, created_at, updated_at
-	      FROM posts WHERE id = $1`
+	q := `SELECT p.id, p.author_id, COALESCE(u.name,'') as author_name, p.content, p.location, p.media_urls, p.likes_count, p.created_at, p.updated_at
+	      FROM posts p LEFT JOIN users u ON u.id = p.author_id WHERE p.id = $1`
 	p := &entity.Post{}
 	err := r.q(ctx).QueryRow(ctx, q, id).Scan(
-		&p.ID, &p.AuthorID, &p.Content, &p.Location, &p.MediaURLs, &p.LikesCount, &p.CreatedAt, &p.UpdatedAt,
+		&p.ID, &p.AuthorID, &p.AuthorName, &p.Content, &p.Location, &p.MediaURLs, &p.LikesCount, &p.CreatedAt, &p.UpdatedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, apperrors.ErrNotFound
@@ -58,14 +58,14 @@ func (r *postRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Pos
 }
 
 func (r *postRepository) List(ctx context.Context, limit, offset int) ([]*entity.Post, error) {
-	q := `SELECT id, author_id, content, location, media_urls, likes_count, created_at, updated_at
-	      FROM posts ORDER BY created_at DESC LIMIT $1 OFFSET $2`
+	q := `SELECT p.id, p.author_id, COALESCE(u.name,'') as author_name, p.content, p.location, p.media_urls, p.likes_count, p.created_at, p.updated_at
+	      FROM posts p LEFT JOIN users u ON u.id = p.author_id ORDER BY p.created_at DESC LIMIT $1 OFFSET $2`
 	return r.scanPosts(ctx, q, limit, offset)
 }
 
 func (r *postRepository) ListByAuthor(ctx context.Context, authorID uuid.UUID, limit, offset int) ([]*entity.Post, error) {
-	q := `SELECT id, author_id, content, location, media_urls, likes_count, created_at, updated_at
-	      FROM posts WHERE author_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+	q := `SELECT p.id, p.author_id, COALESCE(u.name,'') as author_name, p.content, p.location, p.media_urls, p.likes_count, p.created_at, p.updated_at
+	      FROM posts p LEFT JOIN users u ON u.id = p.author_id WHERE p.author_id = $1 ORDER BY p.created_at DESC LIMIT $2 OFFSET $3`
 	return r.scanPosts(ctx, q, authorID, limit, offset)
 }
 
@@ -79,7 +79,7 @@ func (r *postRepository) scanPosts(ctx context.Context, q string, args ...any) (
 	var posts []*entity.Post
 	for rows.Next() {
 		p := &entity.Post{}
-		if err := rows.Scan(&p.ID, &p.AuthorID, &p.Content, &p.Location, &p.MediaURLs, &p.LikesCount, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Content, &p.Location, &p.MediaURLs, &p.LikesCount, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)

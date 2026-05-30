@@ -9,6 +9,7 @@ import (
 type Post struct {
 	ID         uuid.UUID
 	AuthorID   uuid.UUID
+	AuthorName string
 	Content    string
 	Location   *string
 	MediaURLs  []string

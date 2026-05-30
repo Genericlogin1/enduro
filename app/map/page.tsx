@@ -1,28 +1,17 @@
-import { createClient } from '@/lib/supabase/server';
 import Nav from '@/components/Nav';
 import MapView from '@/components/MapView';
 import MapSearch from '@/components/MapSearch';
+import { apiFetch } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
-export default async function MapPage({ searchParams }: { searchParams: { q?: string; country?: string; difficulty?: string; min?: string; max?: string } }) {
-  const supabase = await createClient();
-  let query = supabase
-    .from('routes')
-    .select('id, name, description, difficulty, distance_km, geojson, start_lat, start_lng, country, profiles:profiles!routes_author_id_fkey(username, display_name)')
-    .order('created_at', { ascending: false })
-    .limit(100);
+export default async function MapPage({ searchParams }: { searchParams: { q?: string; country?: string; difficulty?: string } }) {
+  const params = new URLSearchParams({ limit: '100' });
+  if (searchParams.q) params.set('search', searchParams.q);
+  if (searchParams.country) params.set('country', searchParams.country);
+  if (searchParams.difficulty) params.set('difficulty', searchParams.difficulty);
 
-  if (searchParams.q) {
-    const q = searchParams.q.replace(/[%_]/g, '');
-    query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
-  }
-  if (searchParams.country) query = query.ilike('country', '%' + searchParams.country + '%');
-  if (searchParams.difficulty) query = query.eq('difficulty', searchParams.difficulty);
-  if (searchParams.min) query = query.gte('distance_km', Number(searchParams.min));
-  if (searchParams.max) query = query.lte('distance_km', Number(searchParams.max));
-
-  const { data: routes } = await query;
+  const routes = await apiFetch<any[]>(`/routes?${params}`).catch(() => []);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   return (

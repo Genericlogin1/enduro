@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { apiFetch } from '@/lib/api';
+import { setSession } from '@/lib/token';
 
 export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,23 +18,18 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const origin = window.location.origin;
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-        data: { username, display_name: username },
-      },
-    });
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    if (data.user && !data.session) {
-      router.push('/check-email');
-    } else {
+    try {
+      const data = await apiFetch<{ token: string; user: { id: string; name: string; email: string } }>(
+        '/auth/register',
+        { method: 'POST', body: JSON.stringify({ email, password, name }) },
+      );
+      setSession(data.token, data.user);
       router.push('/');
       router.refresh();
+    } catch (e: any) {
+      setError(e.message || 'Sign up failed');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -47,11 +43,11 @@ export default function SignupPage() {
         <input
           type="text"
           required
-          minLength={3}
-          maxLength={20}
-          value={username}
-          onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-          placeholder="Username"
+          minLength={2}
+          maxLength={50}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name"
           className="input"
         />
         <input
@@ -68,7 +64,7 @@ export default function SignupPage() {
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password (min 6)"
+          placeholder="Password (min 6 chars)"
           className="input"
         />
         {error && <p className="text-rust-strong text-sm">{error}</p>}

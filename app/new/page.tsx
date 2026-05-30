@@ -1,14 +1,13 @@
 import Nav from '@/components/Nav';
 import PostForm from '@/components/PostForm';
-import { createClient } from '@/lib/supabase/server';
+import { getServerToken } from '@/lib/serverToken';
 import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewPostPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
+  const token = await getServerToken();
+  if (!token) redirect('/login');
 
   return (
     <div className="min-h-screen pb-24">
@@ -19,7 +18,7 @@ export default async function NewPostPage() {
         </div>
       </header>
       <main className="max-w-xl mx-auto px-4 py-4">
-        <PostForm userId={user.id} />
+        <PostForm />
       </main>
       <Nav active="new" />
     </div>
