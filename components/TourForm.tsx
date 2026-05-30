@@ -30,6 +30,9 @@ export default function TourForm() {
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [website, setWebsite] = useState('');
+  const [telegram, setTelegram] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [instagram, setInstagram] = useState('');
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -66,6 +69,9 @@ export default function TourForm() {
           contact_email: contactEmail || null,
           contact_phone: contactPhone || null,
           website_url: website || null,
+          telegram: telegram || null,
+          whatsapp: whatsapp || null,
+          instagram: instagram || null,
         }),
       }, getToken());
       router.push(`/tours/${tour.id}`);
@@ -154,6 +160,18 @@ export default function TourForm() {
         <div>
           <label className="block text-xs text-muted mb-1">Сайт</label>
           <input value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-muted mb-1">Telegram</label>
+          <input value={telegram} onChange={e => setTelegram(e.target.value)} placeholder="@username" className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-muted mb-1">WhatsApp</label>
+          <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="+7 999 123 45 67" className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-muted mb-1">Instagram</label>
+          <input value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@handle" className="input" />
         </div>
       </div>
 

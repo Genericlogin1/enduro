@@ -21,6 +21,9 @@ type CreateTourRequest struct {
 	ContactEmail *string    `json:"contact_email"`
 	ContactPhone *string    `json:"contact_phone"`
 	WebsiteURL   *string    `json:"website_url"`
+	Telegram     *string    `json:"telegram"`
+	WhatsApp     *string    `json:"whatsapp"`
+	Instagram    *string    `json:"instagram"`
 }
 
 type TourResponse struct {
@@ -45,6 +48,9 @@ type TourResponse struct {
 	ContactEmail   *string    `json:"contact_email"`
 	ContactPhone   *string    `json:"contact_phone"`
 	WebsiteURL     *string    `json:"website_url"`
+	Telegram       *string    `json:"telegram"`
+	WhatsApp       *string    `json:"whatsapp"`
+	Instagram      *string    `json:"instagram"`
 	Status         string     `json:"status"`
 	RegisteredByMe bool       `json:"registered_by_me"`
 	RegsCount      int        `json:"regs_count"`
@@ -62,7 +68,9 @@ func ToTourResponse(t *entity.Tour) TourResponse {
 		SpotsTotal: t.SpotsTotal, SpotsLeft: t.SpotsLeft,
 		Difficulty: t.Difficulty, RouteID: t.RouteID,
 		ContactEmail: t.ContactEmail, ContactPhone: t.ContactPhone,
-		WebsiteURL: t.WebsiteURL, Status: t.Status,
+		WebsiteURL: t.WebsiteURL, Telegram: t.Telegram,
+		WhatsApp: t.WhatsApp, Instagram: t.Instagram,
+		Status: t.Status,
 		RegisteredByMe: t.RegisteredByMe, RegsCount: t.RegsCount,
 		CreatedAt: t.CreatedAt,
 	}

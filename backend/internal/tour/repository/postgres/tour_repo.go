@@ -29,6 +29,7 @@ const cols = `t.id, t.organizer_id,
 	t.price_usd, t.currency, t.spots_total, t.spots_left,
 	t.difficulty, t.route_id,
 	t.contact_email, t.contact_phone, t.website_url,
+	t.telegram, t.whatsapp, t.instagram,
 	t.status, t.created_at, t.updated_at`
 
 const joins = ` FROM tours t LEFT JOIN users u ON u.id = t.organizer_id`
@@ -43,6 +44,7 @@ func scanTour(row pgx.Row) (*entity.Tour, error) {
 		&t.PriceUSD, &t.Currency, &t.SpotsTotal, &t.SpotsLeft,
 		&t.Difficulty, &t.RouteID,
 		&t.ContactEmail, &t.ContactPhone, &t.WebsiteURL,
+		&t.Telegram, &t.WhatsApp, &t.Instagram,
 		&t.Status, &t.CreatedAt, &t.UpdatedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -54,12 +56,13 @@ func scanTour(row pgx.Row) (*entity.Tour, error) {
 func (r *tourRepository) Create(ctx context.Context, t *entity.Tour) error {
 	q := `INSERT INTO tours (id,organizer_id,title,description,cover_url,region,country,
 		start_date,end_date,price_usd,currency,spots_total,spots_left,difficulty,route_id,
-		contact_email,contact_phone,website_url,status,created_at,updated_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13,$14,$15,$16,$17,$18,$19,$20)`
+		contact_email,contact_phone,website_url,telegram,whatsapp,instagram,status,created_at,updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)`
 	_, err := r.pool.Exec(ctx, q,
 		t.ID, t.OrganizerID, t.Title, t.Description, t.CoverURL, t.Region, t.Country,
 		t.StartDate, t.EndDate, t.PriceUSD, t.Currency, t.SpotsTotal,
 		t.Difficulty, t.RouteID, t.ContactEmail, t.ContactPhone, t.WebsiteURL,
+		t.Telegram, t.WhatsApp, t.Instagram,
 		t.Status, t.CreatedAt, t.UpdatedAt,
 	)
 	return err
@@ -97,11 +100,12 @@ func (r *tourRepository) Update(ctx context.Context, t *entity.Tour) error {
 	q := `UPDATE tours SET title=$1,description=$2,cover_url=$3,region=$4,country=$5,
 		start_date=$6,end_date=$7,price_usd=$8,spots_total=$9,spots_left=$10,
 		difficulty=$11,contact_email=$12,contact_phone=$13,website_url=$14,
-		status=$15,updated_at=$16 WHERE id=$17`
+		telegram=$15,whatsapp=$16,instagram=$17,status=$18,updated_at=$19 WHERE id=$20`
 	tag, err := r.pool.Exec(ctx, q,
 		t.Title, t.Description, t.CoverURL, t.Region, t.Country,
 		t.StartDate, t.EndDate, t.PriceUSD, t.SpotsTotal, t.SpotsLeft,
 		t.Difficulty, t.ContactEmail, t.ContactPhone, t.WebsiteURL,
+		t.Telegram, t.WhatsApp, t.Instagram,
 		t.Status, t.UpdatedAt, t.ID,
 	)
 	if err != nil { return err }

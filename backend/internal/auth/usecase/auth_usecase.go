@@ -47,12 +47,22 @@ func (a *authUsecase) Register(ctx context.Context, req authdto.RegisterRequest)
 		return authdto.AuthResponse{}, apperrors.ErrInternal
 	}
 
+	accountType := req.AccountType
+	if accountType != entity.AccountBusiness {
+		accountType = entity.AccountPersonal
+	}
+
 	now := time.Now().UTC()
 	user := &entity.User{
 		ID:           uuid.New(),
 		Email:        req.Email,
 		PasswordHash: hash,
 		Name:         req.Name,
+		AccountType:  accountType,
+		IsBusiness:   accountType == entity.AccountBusiness,
+		BusinessName: req.BusinessName,
+		BusinessType: req.BusinessType,
+		Telegram:     req.Telegram,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}

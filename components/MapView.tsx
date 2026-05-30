@@ -33,6 +33,7 @@ type Route = {
   start_lat: number | null;
   start_lng: number | null;
   country: string | null;
+  route_type?: string; // 'personal' | 'tour'
 };
 
 type GpsTrack = {
@@ -178,6 +179,13 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
           {/* Routes tab */}
           {tab === 'routes' && (
             <div className="p-2 space-y-1">
+              {/* Legend */}
+              {routes.length > 0 && (
+                <div className="flex gap-3 px-2 py-1.5 text-[10px] text-muted">
+                  <span className="flex items-center gap-1"><span className="w-3 h-1 rounded-full bg-green-400 inline-block" />Личные</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-1 rounded-full bg-orange-400 inline-block" />Туры</span>
+                </div>
+              )}
               {routes.length === 0 ? (
                 <div className="p-4 text-center text-muted text-xs">
                   Нет маршрутов. Перейди на вкладку «Нарисовать» и создай первый!
@@ -189,8 +197,11 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
                   className={'w-full text-left p-2.5 rounded-lg transition-colors ' +
                     (active?.kind === 'route' && active.data.id === r.id ? 'bg-moss/15 text-ink' : 'hover:bg-bg-elev-2')}
                 >
-                  <div className="text-sm font-semibold truncate">{r.name}</div>
-                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${r.route_type === 'tour' ? 'bg-orange-400' : 'bg-green-400'}`} />
+                    <div className="text-sm font-semibold truncate">{r.name}</div>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap pl-3.5">
                     {r.difficulty && (
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${diffColor[r.difficulty]}20`, color: diffColor[r.difficulty] }}>
                         {r.difficulty}
@@ -198,6 +209,7 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
                     )}
                     {r.distance_km && <span className="text-[10px] text-muted">{r.distance_km} km</span>}
                     {r.country && <span className="text-[10px] text-muted">{r.country}</span>}
+                    {r.route_type === 'tour' && <span className="text-[10px] text-orange-400 font-bold">Тур</span>}
                   </div>
                 </button>
               ))}
@@ -318,11 +330,19 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
             const coords = r.geojson?.coordinates?.map((c: number[]) => ({ lat: c[1], lng: c[0] })) || [];
             if (coords.length < 2) return null;
             const isActive = active?.kind === 'route' && active.data.id === r.id;
+            const isTour = r.route_type === 'tour';
+            // Personal routes: green | Tour routes: orange
+            const baseColor = isTour ? '#f97316' : '#4ade80';
+            const activeColor = isTour ? '#fb923c' : '#86efac';
             return (
               <Polyline
                 key={r.id}
                 path={coords}
-                options={{ strokeColor: isActive ? '#f97316' : '#71717a', strokeWeight: isActive ? 5 : 3, strokeOpacity: 0.8 }}
+                options={{
+                  strokeColor: isActive ? activeColor : baseColor,
+                  strokeWeight: isActive ? 5 : 3,
+                  strokeOpacity: 0.85,
+                }}
                 onClick={() => { setActive({ kind: 'route', data: r }); setTab('routes'); }}
               />
             );

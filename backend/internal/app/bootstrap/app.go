@@ -37,6 +37,8 @@ import (
 	reporthandler "enduro/internal/report/handler"
 	reportrepo "enduro/internal/report/repository/postgres"
 	reportusecase "enduro/internal/report/usecase"
+	bikecat "enduro/internal/bikecat"
+	bikecathandler "enduro/internal/bikecat/handler"
 	tourdomain "enduro/internal/tour"
 	tourhandler "enduro/internal/tour/handler"
 	tourrepo "enduro/internal/tour/repository/postgres"
@@ -139,6 +141,9 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	garagedomain.RegisterRoutes(v1, garageH, jwtManager)
 	reportdomain.RegisterRoutes(app, reportH, jwtManager)
 	tourdomain.RegisterRoutes(app, tourH, jwtManager)
+
+	bikecatH := bikecathandler.NewBikeCatalogHandler(pool)
+	bikecat.RegisterRoutes(v1, bikecatH)
 
 	// ── Graceful shutdown ─────────────────────────────────────────────────────
 	quit := make(chan os.Signal, 1)

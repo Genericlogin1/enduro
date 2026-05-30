@@ -27,6 +27,9 @@ type Tour struct {
 	ContactEmail   *string
 	ContactPhone   *string
 	WebsiteURL     *string
+	Telegram       *string
+	WhatsApp       *string
+	Instagram      *string
 	Status         string
 	RegisteredByMe bool
 	RegsCount      int
