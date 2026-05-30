@@ -63,7 +63,10 @@ export default async function FeedPage({
             <h1 className="font-display text-3xl leading-none text-ink">ENDURO WORLD</h1>
             <p className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">Global Enduro Community</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <Link href="/search" className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-line transition-colors text-muted hover:text-ink" title="Поиск">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" className="w-4 h-4"><circle cx="8.5" cy="8.5" r="5" strokeWidth="1.7" /><path d="M14 14l3 3" strokeWidth="1.7" strokeLinecap="round" /></svg>
+            </Link>
             {token && <Link href="/reports/new" className="btn btn-ghost text-xs">📋 Отчёт</Link>}
             {token ? (
               <Link href="/new" className="btn btn-secondary text-xs">+ Пост</Link>
