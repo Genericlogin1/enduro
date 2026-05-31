@@ -36,26 +36,26 @@ export default function MapSearch({ initial }: { initial: { q?: string; country?
       <form onSubmit={apply} className="flex gap-2 max-w-xl mx-auto">
         <input
           className="input flex-1"
-          placeholder="Search routes by name or description"
+          placeholder="Поиск маршрутов по названию или описанию"
           value={q}
           onChange={e => setQ(e.target.value)}
         />
-        <button type="submit" className="btn btn-primary">Find</button>
-        <button type="button" onClick={() => setOpen(o => !o)} className="btn btn-ghost" aria-label="Filters">
+        <button type="submit" className="btn btn-primary">Найти</button>
+        <button type="button" onClick={() => setOpen(o => !o)} className="btn btn-ghost" aria-label="Фильтры">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" className="w-4 h-4"><path strokeWidth="1.8" strokeLinecap="round" d="M3 5h14M5 10h10M8 15h4"/></svg>
         </button>
       </form>
       {open && (
         <div className="max-w-xl mx-auto mt-3 grid grid-cols-2 gap-2">
-          <input className="input" placeholder="Country" value={country} onChange={e => setCountry(e.target.value)} />
+          <input className="input" placeholder="Страна / регион" value={country} onChange={e => setCountry(e.target.value)} />
           <select className="input" value={difficulty} onChange={e => setDifficulty(e.target.value)}>
-            <option value="">Any difficulty</option>
+            <option value="">Любая сложность</option>
             {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
-          <input className="input" type="number" min="0" placeholder="Min km" value={min} onChange={e => setMin(e.target.value)} />
-          <input className="input" type="number" min="0" placeholder="Max km" value={max} onChange={e => setMax(e.target.value)} />
-          <button type="button" onClick={() => apply()} className="btn btn-primary col-span-1">Apply</button>
-          <button type="button" onClick={reset} className="btn btn-ghost col-span-1">Reset</button>
+          <input className="input" type="number" min="0" placeholder="От км" value={min} onChange={e => setMin(e.target.value)} />
+          <input className="input" type="number" min="0" placeholder="До км" value={max} onChange={e => setMax(e.target.value)} />
+          <button type="button" onClick={() => apply()} className="btn btn-primary col-span-1">Применить</button>
+          <button type="button" onClick={reset} className="btn btn-ghost col-span-1">Сбросить</button>
         </div>
       )}
     </div>
