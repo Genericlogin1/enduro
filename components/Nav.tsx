@@ -10,6 +10,7 @@ const Icon = ({ name, className = '' }: { name: string; className?: string }) =>
     new: <path d="M10 3v14M3 10h14" strokeWidth="2.2" strokeLinecap="round" />,
     gps: <><circle cx="10" cy="10" r="2.8" strokeWidth="1.8" /><path d="M10 2v2M10 16v2M2 10h2M16 10h2" strokeWidth="1.6" strokeLinecap="round" /></>,
     tours: <path d="M10 2.5l2.2 5h5.3l-4.3 3.1 1.7 5.2L10 13.2l-4.9 2.6 1.7-5.2L2.5 7.5h5.3z" strokeWidth="1.5" strokeLinejoin="round" />,
+    rides: <><path d="M3 13c0-2.5 1.5-4.5 4-5.5M17 13c0-2.5-1.5-4.5-4-5.5" strokeWidth="1.7" strokeLinecap="round" /><circle cx="10" cy="14" r="2" strokeWidth="1.7" /><path d="M8 8V5.5M12 8V5.5" strokeWidth="1.7" strokeLinecap="round" /></>,
     me: <path d="M10 10a3 3 0 100-6 3 3 0 000 6zm-6 7a6 6 0 0112 0" strokeWidth="1.7" strokeLinecap="round" />,
   };
   return (
@@ -24,7 +25,7 @@ const tabs = [
   { key: 'map',   label: 'Map',   href: '/map' },
   { key: 'new',   label: '',      href: '/new' },
   { key: 'gps',   label: 'GPS',   href: '/gps' },
-  { key: 'tours', label: 'Туры',  href: '/tours' },
+  { key: 'rides', label: 'Поехали', href: '/rides' },
   { key: 'me',    label: 'Me',    href: '/me' },
 ];
 

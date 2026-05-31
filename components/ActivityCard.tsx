@@ -4,7 +4,7 @@ import { ru } from 'date-fns/locale';
 import Link from 'next/link';
 
 type ActivityItem = {
-  type: 'route' | 'gps' | 'user';
+  type: 'route' | 'gps' | 'user' | 'ride';
   id: string;
   title: string;
   actor_id: string;
@@ -17,12 +17,14 @@ const icons: Record<string, string> = {
   route: '🗺️',
   gps: '📡',
   user: '🏍️',
+  ride: '👥',
 };
 
 const labels: Record<string, string> = {
   route: 'добавил маршрут',
   gps: 'записал трек',
   user: 'присоединился',
+  ride: 'организует покатушку',
 };
 
 function parseRouteMeta(meta: string) {
@@ -56,7 +58,7 @@ export default function ActivityCard({ item }: { item: ActivityItem }) {
 
         {item.type !== 'user' && (
           <Link
-            href={item.type === 'route' ? `/routes/${item.id}` : `/gps/sessions/${item.id}`}
+            href={item.type === 'route' ? `/routes/${item.id}` : item.type === 'ride' ? `/rides/${item.id}` : `/gps/sessions/${item.id}`}
             className="flex items-center gap-1.5 mt-1 group"
           >
             <span className="text-base">{icons[item.type]}</span>
@@ -66,6 +68,11 @@ export default function ActivityCard({ item }: { item: ActivityItem }) {
           </Link>
         )}
 
+        {item.type === 'ride' && item.meta && (
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted">
+            <span>📍 {item.meta.split('|')[0]}</span>
+          </div>
+        )}
         {item.type === 'route' && item.meta && (
           <div className="flex items-center gap-2 mt-1.5">
             {(() => {

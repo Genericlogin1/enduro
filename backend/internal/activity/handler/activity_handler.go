@@ -40,6 +40,13 @@ UNION ALL
  FROM track_sessions ts JOIN users u ON u.id = ts.user_id
  WHERE ts.finished_at IS NOT NULL)
 UNION ALL
+(SELECT 'ride', gr.id::text, gr.title,
+        u.id::text, u.name,
+        gr.location || '|' || gr.ride_date::text,
+        gr.created_at
+ FROM group_rides gr JOIN users u ON u.id = gr.organizer_id
+ WHERE gr.status != 'done')
+UNION ALL
 (SELECT 'user', u.id::text, u.name,
         u.id::text, u.name, '',
         u.created_at

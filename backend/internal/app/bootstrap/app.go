@@ -39,6 +39,10 @@ import (
 	reportusecase "enduro/internal/report/usecase"
 	activity "enduro/internal/activity"
 	activityhandler "enduro/internal/activity/handler"
+	ridedomain "enduro/internal/ride"
+	ridehandler "enduro/internal/ride/handler"
+	riderepo "enduro/internal/ride/repository/postgres"
+	rideusecase "enduro/internal/ride/usecase"
 	bikecat "enduro/internal/bikecat"
 	bikecathandler "enduro/internal/bikecat/handler"
 	spotdomain "enduro/internal/spot"
@@ -85,6 +89,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	reportRepository   := reportrepo.NewReportRepository(pool)
 	tourRepository     := tourrepo.NewTourRepository(pool)
 	spotRepository     := spotrepo.NewSpotRepository(pool)
+	rideRepository     := riderepo.NewRideRepository(pool)
 
 	// ── Usecases ─────────────────────────────────────────────────────────────
 	authUC     := authusecase.NewAuthUsecase(userRepository, jwtManager)
@@ -97,6 +102,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	reportUC   := reportusecase.NewReportUsecase(reportRepository)
 	tourUC     := tourusecase.NewTourUsecase(tourRepository)
 	spotUC     := spotusecase.NewSpotUsecase(spotRepository)
+	rideUC     := rideusecase.NewRideUsecase(rideRepository)
 
 	// ── Handlers ─────────────────────────────────────────────────────────────
 	authH     := authhandler.NewAuthHandler(authUC)
@@ -109,6 +115,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	reportH   := reporthandler.NewReportHandler(reportUC)
 	tourH     := tourhandler.NewTourHandler(tourUC, pool)
 	spotH     := spothandler.NewSpotHandler(spotUC)
+	rideH     := ridehandler.NewRideHandler(rideUC)
 
 	// ── Fiber ─────────────────────────────────────────────────────────────────
 	app := fiber.New(fiber.Config{
@@ -157,6 +164,7 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 
 	activityH := activityhandler.NewActivityHandler(pool)
 	activity.RegisterRoutes(v1, activityH)
+	ridedomain.RegisterRoutes(v1, rideH, jwtManager)
 
 	// ── Graceful shutdown ─────────────────────────────────────────────────────
 	quit := make(chan os.Signal, 1)
