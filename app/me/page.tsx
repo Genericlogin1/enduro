@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
 import Garage from '@/components/Garage';
 import DeleteButton from '@/components/DeleteButton';
@@ -35,7 +34,7 @@ export default async function MePage() {
             </div>
           </div>
         </main>
-        <Nav active="me" />
+        
       </div>
     );
   }
@@ -269,7 +268,7 @@ export default async function MePage() {
         )}
       </main>
 
-      <Nav active="me" />
+      
     </div>
   );
 }

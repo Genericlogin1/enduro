@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
 import ReportCard from '@/components/ReportCard';
 import NewsCard from '@/components/NewsCard';
@@ -393,7 +392,7 @@ export default async function FeedPage({
           )
         )}
       </main>
-      <Nav active="feed" />
+      
     </div>
   );
 }

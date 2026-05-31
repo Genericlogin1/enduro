@@ -1,4 +1,3 @@
-import Nav from '@/components/Nav';
 import GpsTrackMap from '@/components/GpsTrackMap';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
@@ -73,7 +72,7 @@ export default async function GpsSessionPage({ params }: { params: { id: string 
         <GpsTrackMap apiKey={apiKey} points={points} />
       </main>
 
-      <Nav active="me" />
+      
     </div>
   );
 }

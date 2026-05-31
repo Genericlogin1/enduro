@@ -1,4 +1,3 @@
-import Nav from '@/components/Nav';
 import MapView from '@/components/MapView';
 import MapSearch from '@/components/MapSearch';
 import { apiFetch } from '@/lib/api';
@@ -32,7 +31,7 @@ export default async function MapPage({ searchParams }: { searchParams: { q?: st
       <div className="flex-1 overflow-hidden">
         <MapView apiKey={apiKey} routes={routes} />
       </div>
-      <Nav active="map" />
+      
     </div>
   );
 }

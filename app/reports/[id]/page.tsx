@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import { formatDistanceToNow } from 'date-fns';
@@ -109,7 +108,7 @@ export default async function ReportPage({ params }: { params: { id: string } })
         </div>
       </div>
 
-      <Nav />
+      
     </div>
   );
 }

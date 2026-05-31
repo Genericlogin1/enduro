@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import Nav from '@/components/Nav';
 import TourForm from '@/components/TourForm';
 import { getServerToken } from '@/lib/serverToken';
 
@@ -19,7 +18,7 @@ export default async function NewTourPage() {
       <main className="max-w-2xl mx-auto px-4 py-5">
         <TourForm />
       </main>
-      <Nav />
+      
     </div>
   );
 }

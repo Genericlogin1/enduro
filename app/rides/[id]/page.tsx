@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import RideCard from '@/components/RideCard';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
@@ -23,7 +22,7 @@ export default async function RidePage({ params }: { params: { id: string } }) {
           <p className="text-lg">Покатушка не найдена</p>
           <Link href="/rides" className="btn btn-ghost mt-4 inline-block">← Все покатушки</Link>
         </div>
-        <Nav active="rides" />
+        
       </div>
     );
   }
@@ -101,7 +100,7 @@ export default async function RidePage({ params }: { params: { id: string } }) {
           )}
         </div>
       </main>
-      <Nav active="rides" />
+      
     </div>
   );
 }

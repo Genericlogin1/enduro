@@ -1,4 +1,3 @@
-import Nav from '@/components/Nav';
 import GpsTracker from '@/components/GpsTracker';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +14,7 @@ export default function GpsPage() {
       <main className="max-w-xl mx-auto px-4 py-4">
         <GpsTracker />
       </main>
-      <Nav active="gps" />
+      
     </div>
   );
 }

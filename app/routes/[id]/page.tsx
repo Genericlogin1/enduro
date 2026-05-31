@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import StarRating from '@/components/StarRating';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
@@ -113,7 +112,7 @@ export default async function RouteDetailPage({ params }: { params: { id: string
           Добавлен {new Date(route.created_at).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
       </div>
-      <Nav />
+      
     </div>
   );
 }

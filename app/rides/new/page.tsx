@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Nav from '@/components/Nav';
 import { apiFetch } from '@/lib/api';
 import { getToken } from '@/lib/token';
 
@@ -124,7 +123,7 @@ export default function NewRidePage() {
           </button>
         </form>
       </main>
-      <Nav active="rides" />
+      
     </div>
   );
 }

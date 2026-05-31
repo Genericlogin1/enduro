@@ -1,4 +1,3 @@
-import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
 import FollowButton from '@/components/FollowButton';
 import { apiFetch } from '@/lib/api';
@@ -34,7 +33,7 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
           <h2 className="font-display text-2xl text-ink">Rider not found</h2>
           <Link href="/" className="btn btn-ghost mt-6">Back to feed</Link>
         </main>
-        <Nav />
+        
       </div>
     );
   }
@@ -144,7 +143,7 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
         </section>
       </main>
 
-      <Nav />
+      
     </div>
   );
 }

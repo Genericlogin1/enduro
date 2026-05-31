@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import SwRegister from '@/components/SwRegister';
+import Nav from '@/components/Nav';
 
 export const metadata: Metadata = {
   title: 'Enduro World',
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-base text-ink min-h-screen">
         <SwRegister />
         {children}
+        <Nav />
       </body>
     </html>
   );

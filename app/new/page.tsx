@@ -1,4 +1,3 @@
-import Nav from '@/components/Nav';
 import PostForm from '@/components/PostForm';
 import { getServerToken } from '@/lib/serverToken';
 import { redirect } from 'next/navigation';
@@ -20,7 +19,7 @@ export default async function NewPostPage() {
       <main className="max-w-xl mx-auto px-4 py-4">
         <PostForm />
       </main>
-      <Nav active="new" />
+      
     </div>
   );
 }

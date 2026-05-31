@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import Nav from '@/components/Nav';
 import EditProfileForm from '@/components/EditProfileForm';
 import { getServerToken } from '@/lib/serverToken';
 import { apiFetch } from '@/lib/api';
@@ -33,7 +32,7 @@ export default async function EditProfilePage() {
       <main className="max-w-xl mx-auto px-4 py-5">
         <EditProfileForm user={user} />
       </main>
-      <Nav active="me" />
+      
     </div>
   );
 }

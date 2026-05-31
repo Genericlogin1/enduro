@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import RideCard from '@/components/RideCard';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
@@ -41,7 +40,7 @@ export default async function RidesPage() {
           ))
         )}
       </main>
-      <Nav active="rides" />
+      
     </div>
   );
 }

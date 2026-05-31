@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Nav from '@/components/Nav';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import TourRegisterButton from '@/components/TourRegisterButton';
@@ -166,7 +165,7 @@ export default async function TourPage({ params }: { params: { id: string } }) {
           )}
         </div>
       </div>
-      <Nav />
+      
     </div>
   );
 }

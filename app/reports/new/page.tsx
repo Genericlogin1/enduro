@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import Nav from '@/components/Nav';
 import ReportForm from '@/components/ReportForm';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
@@ -29,7 +28,7 @@ export default async function NewReportPage() {
           bikes={bikesData?.bikes ?? []}
         />
       </main>
-      <Nav />
+      
     </div>
   );
 }

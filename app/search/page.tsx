@@ -1,4 +1,3 @@
-import Nav from '@/components/Nav';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
@@ -100,7 +99,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
         )}
       </main>
 
-      <Nav />
+      
     </div>
   );
 }
