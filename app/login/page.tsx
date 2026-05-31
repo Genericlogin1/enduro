@@ -34,11 +34,24 @@ function LoginForm() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-10">
+    <main className="min-h-screen flex items-center justify-center px-4 py-10"
+      style={{ background: 'radial-gradient(ellipse 100% 60% at 50% 0%, rgb(var(--accent) / 0.06) 0%, transparent 60%)' }}>
       <form onSubmit={handleSubmit} className="card p-7 w-full max-w-sm space-y-4">
-        <div className="text-center space-y-1">
-          <h1 className="font-display text-3xl text-ink">ENDURO WORLD</h1>
-          <p className="text-xs text-muted uppercase tracking-wider">Sign in to continue</p>
+        <div className="text-center space-y-2 pb-1">
+          {/* Logo mark */}
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgb(var(--accent))', boxShadow: '0 4px 20px rgb(var(--accent) / 0.4)' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#080909" strokeWidth="2.2" className="w-6 h-6">
+                <circle cx="12" cy="12" r="9" strokeWidth="1.8"/>
+                <path d="M12 7v5l3.5 2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <h1 className="font-display text-4xl leading-none" style={{ color: 'rgb(var(--text-primary))' }}>
+            ENDURO<span style={{ color: 'rgb(var(--accent))' }}>.</span>WORLD
+          </h1>
+          <p className="text-[11px] text-muted uppercase tracking-widest">Sign in to continue</p>
         </div>
         {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
         <input

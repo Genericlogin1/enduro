@@ -70,7 +70,7 @@ export default async function MePage() {
     <div className="min-h-screen pb-24">
       {/* Profile hero */}
       <div className="relative">
-        <div className="h-24 bg-gradient-to-br from-moss/30 via-moss/10 to-transparent" />
+        <div className="h-24" style={{ background: 'linear-gradient(135deg, rgb(var(--accent) / 0.12) 0%, rgb(var(--accent) / 0.04) 50%, transparent 100%)' }} />
         <div className="max-w-xl mx-auto px-4">
           <div className="flex items-end gap-4 -mt-8">
             {/* Avatar */}
@@ -118,6 +118,12 @@ export default async function MePage() {
               <Link href="/me/edit" className="text-xs text-muted hover:text-ink border border-line rounded-lg px-2.5 py-1 hover:border-moss/40 transition-colors">
                 ✏️ Изменить
               </Link>
+              {userInfo?.account_type === 'business' && (
+                <Link href="/business" className="text-xs font-bold rounded-lg px-2.5 py-1 transition-colors"
+                  style={{ background: 'rgb(var(--accent) / 0.15)', color: 'rgb(var(--accent))' }}>
+                  📊 Дашборд
+                </Link>
+              )}
             </div>
           </div>
 

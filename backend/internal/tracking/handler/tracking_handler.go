@@ -3,7 +3,10 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
+	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
@@ -94,6 +97,47 @@ func (h *TrackingHandler) AddPoints(c *fiber.Ctx) error {
 		}
 	}
 	return response.OK(c, fiber.Map{"saved": saved})
+}
+
+// ExportGPX generates a GPX file for a session.
+func (h *TrackingHandler) ExportGPX(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.ErrBadRequest)
+	}
+	callerID, _ := middleware.UserIDFromCtx(c)
+	sess, err := h.uc.GetSession(c.UserContext(), id, callerID)
+	if err != nil {
+		return response.Error(c, err)
+	}
+
+	name := sess.Name
+	if name == "" {
+		name = "Enduro Track"
+	}
+
+	var sb strings.Builder
+	sb.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+	sb.WriteString("<gpx version=\"1.1\" creator=\"Enduro World\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n")
+	sb.WriteString(fmt.Sprintf("  <metadata><name>%s</name><time>%s</time></metadata>\n",
+		name, time.Now().UTC().Format(time.RFC3339)))
+	sb.WriteString("  <trk>\n")
+	sb.WriteString(fmt.Sprintf("    <name>%s</name>\n", name))
+	sb.WriteString("    <trkseg>\n")
+
+	for _, pt := range sess.Points {
+		sb.WriteString(fmt.Sprintf(
+			"      <trkpt lat=\"%.8f\" lon=\"%.8f\"><ele>%.1f</ele><time>%s</time></trkpt>\n",
+			pt.Lat, pt.Lng, pt.Altitude, pt.RecordedAt.UTC().Format(time.RFC3339),
+		))
+	}
+
+	sb.WriteString("    </trkseg>\n  </trk>\n</gpx>")
+
+	slug := strings.ReplaceAll(strings.ToLower(name), " ", "-")
+	c.Set("Content-Type", "application/gpx+xml")
+	c.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.gpx"`, slug))
+	return c.SendString(sb.String())
 }
 
 // LiveSession returns current position by share token (public, no auth).

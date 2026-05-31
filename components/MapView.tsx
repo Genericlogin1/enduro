@@ -44,6 +44,33 @@ type GpsTrack = {
   points: { lat: number; lng: number }[];
 };
 
+type Spot = {
+  id: string;
+  author_id: string;
+  author_name: string;
+  title: string;
+  description: string;
+  kind: string;
+  lat: number;
+  lng: number;
+  country: string;
+  upvotes: number;
+  my_vote: number;
+};
+
+const SPOT_KINDS = [
+  { id: 'danger', label: '⚠️ Опасность', color: '#ef4444' },
+  { id: 'view',   label: '🌄 Панорама',  color: '#3b82f6' },
+  { id: 'fuel',   label: '⛽ Заправка',  color: '#f59e0b' },
+  { id: 'camp',   label: '🏕️ Лагерь',   color: '#10b981' },
+  { id: 'tech',   label: '🔧 Помощь',    color: '#8b5cf6' },
+  { id: 'mud',    label: '🪨 Грязь',     color: '#92400e' },
+];
+
+const SPOT_EMOJI: Record<string, string> = {
+  danger: '⚠️', view: '🌄', fuel: '⛽', camp: '🏕️', tech: '🔧', mud: '🪨',
+};
+
 type ActiveItem =
   | { kind: 'route'; data: Route }
   | { kind: 'gps'; data: GpsTrack };
@@ -59,11 +86,19 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
   const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState('Medium');
   const [country, setCountry] = useState('');
+  const [routeType, setRouteType] = useState<'personal' | 'tour'>('personal');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<ActiveItem | null>(null);
   const [gpsTracks, setGpsTracks] = useState<GpsTrack[]>([]);
-  const [tab, setTab] = useState<'routes' | 'gps' | 'draw'>('routes');
+  const [tab, setTab] = useState<'routes' | 'gps' | 'draw' | 'spots'>('routes');
+  const [spots, setSpots] = useState<Spot[]>([]);
+  const [spotKind, setSpotKind] = useState('danger');
+  const [spotTitle, setSpotTitle] = useState('');
+  const [spotDesc, setSpotDesc] = useState('');
+  const [addingSpot, setAddingSpot] = useState(false);
+  const [pendingLatLng, setPendingLatLng] = useState<{ lat: number; lng: number } | null>(null);
+  const [savingSpot, setSavingSpot] = useState(false);
 
   useEffect(() => {
     const token = getToken();
@@ -88,6 +123,54 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    apiFetch<{ spots: Spot[] }>('/spots?limit=500')
+      .then(d => setSpots(d?.spots ?? []))
+      .catch(() => {});
+  }, []);
+
+  async function handleMapClick(e: google.maps.MapMouseEvent) {
+    if (!addingSpot || !e.latLng) return;
+    setPendingLatLng({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+  }
+
+  async function saveSpot() {
+    if (!pendingLatLng || !spotTitle.trim()) return;
+    const token = getToken();
+    if (!token) return;
+    setSavingSpot(true);
+    try {
+      const sp = await apiFetch<Spot>('/spots', {
+        method: 'POST',
+        body: JSON.stringify({ title: spotTitle.trim(), description: spotDesc.trim(), kind: spotKind, lat: pendingLatLng.lat, lng: pendingLatLng.lng }),
+      }, token);
+      if (sp) setSpots(prev => [sp, ...prev]);
+      setPendingLatLng(null);
+      setSpotTitle('');
+      setSpotDesc('');
+      setAddingSpot(false);
+    } catch {}
+    setSavingSpot(false);
+  }
+
+  async function voteSpot(spotId: string, value: number) {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await apiFetch<{ upvotes: number; my_vote: number }>(`/spots/${spotId}/vote`, {
+        method: 'POST', body: JSON.stringify({ value }),
+      }, token);
+      if (res) setSpots(prev => prev.map(s => s.id === spotId ? { ...s, upvotes: res.upvotes, my_vote: res.my_vote } : s));
+    } catch {}
+  }
+
+  async function deleteSpot(spotId: string) {
+    const token = getToken();
+    if (!token) return;
+    await apiFetch(`/spots/${spotId}`, { method: 'DELETE' }, token).catch(() => {});
+    setSpots(prev => prev.filter(s => s.id !== spotId));
+  }
 
   function fitToTracks(tracks: GpsTrack[], map: google.maps.Map) {
     const bounds = new google.maps.LatLngBounds();
@@ -137,6 +220,7 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
           description: description.trim() || null,
           difficulty,
           country: country.trim() || null,
+          route_type: routeType,
           distance_km: distance,
           geojson,
           start_lat: path[0].lat,
@@ -163,14 +247,14 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
       <div className="w-64 flex-shrink-0 bg-bg-elev-1 border-r border-line flex flex-col overflow-hidden">
         {/* Tabs */}
         <div className="flex border-b border-line">
-          {(['routes', 'gps', 'draw'] as const).map(t => (
+          {(['routes', 'gps', 'spots', 'draw'] as const).map(t => (
             <button
               key={t}
-              onClick={() => setTab(t)}
-              className={'flex-1 py-2.5 text-xs font-semibold transition-colors ' +
+              onClick={() => { setTab(t); if (t !== 'spots') setAddingSpot(false); }}
+              className={'flex-1 py-2 text-[10px] font-semibold transition-colors ' +
                 (tab === t ? 'text-moss-strong border-b-2 border-moss-strong' : 'text-muted hover:text-ink')}
             >
-              {t === 'routes' ? `Маршруты (${routes.length})` : t === 'gps' ? `GPS (${gpsTracks.length})` : 'Нарисовать'}
+              {t === 'routes' ? `Маршруты` : t === 'gps' ? `GPS` : t === 'spots' ? `Споты (${spots.length})` : 'Нарисовать'}
             </button>
           ))}
         </div>
@@ -250,6 +334,89 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
             </div>
           )}
 
+          {/* Spots tab */}
+          {tab === 'spots' && (
+            <div className="p-3 space-y-2">
+              <button
+                onClick={() => { setAddingSpot(a => !a); setPendingLatLng(null); }}
+                className={`w-full py-2 rounded-lg text-xs font-bold border-2 transition-all ${addingSpot ? 'border-rust bg-rust/10 text-rust-strong' : 'border-moss-strong bg-moss/10 text-moss-strong'}`}
+              >
+                {addingSpot ? '✕ Отменить' : '+ Добавить спот'}
+              </button>
+
+              {addingSpot && !pendingLatLng && (
+                <p className="text-xs text-muted text-center py-2">👆 Нажми на карту, чтобы выбрать место</p>
+              )}
+
+              {addingSpot && pendingLatLng && (
+                <div className="space-y-2 p-2 bg-moss/5 rounded-lg border border-moss/20">
+                  <div className="grid grid-cols-3 gap-1">
+                    {SPOT_KINDS.map(k => (
+                      <button key={k.id} type="button" onClick={() => setSpotKind(k.id)}
+                        className={`text-[10px] py-1 rounded-md border transition-all ${spotKind === k.id ? 'border-current font-bold' : 'border-line text-muted'}`}
+                        style={spotKind === k.id ? { color: k.color, borderColor: k.color, background: k.color + '15' } : {}}
+                      >
+                        {k.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    value={spotTitle}
+                    onChange={e => setSpotTitle(e.target.value)}
+                    placeholder="Название *"
+                    className="input text-xs"
+                  />
+                  <input
+                    value={spotDesc}
+                    onChange={e => setSpotDesc(e.target.value)}
+                    placeholder="Описание (необязательно)"
+                    className="input text-xs"
+                  />
+                  <button onClick={saveSpot} disabled={savingSpot || !spotTitle.trim()} className="btn btn-primary w-full text-xs py-1.5 disabled:opacity-50">
+                    {savingSpot ? 'Сохраняю...' : 'Сохранить спот'}
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-1 mt-1">
+                {spots.length === 0 && (
+                  <p className="text-xs text-muted text-center py-4">Нет спотов. Добавь первый!</p>
+                )}
+                {spots.map(sp => {
+                  const kindInfo = SPOT_KINDS.find(k => k.id === sp.kind);
+                  return (
+                    <div key={sp.id} className="p-2 rounded-lg bg-bg-elev-2 space-y-1">
+                      <div className="flex items-start justify-between gap-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span>{SPOT_EMOJI[sp.kind] || '📍'}</span>
+                          <span className="text-xs font-semibold truncate">{sp.title}</span>
+                        </div>
+                        <button
+                          onClick={() => mapRef.current?.panTo({ lat: sp.lat, lng: sp.lng })}
+                          className="text-[10px] text-moss-strong hover:underline shrink-0"
+                        >↗</button>
+                      </div>
+                      {sp.description && <p className="text-[10px] text-muted pl-5">{sp.description}</p>}
+                      <div className="flex items-center justify-between pl-5">
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => voteSpot(sp.id, sp.my_vote === 1 ? 0 : 1)}
+                            className={`text-xs px-1.5 py-0.5 rounded transition-colors ${sp.my_vote === 1 ? 'text-moss-strong' : 'text-muted hover:text-moss-strong'}`}>
+                            👍 {sp.upvotes > 0 ? sp.upvotes : ''}
+                          </button>
+                          <button onClick={() => voteSpot(sp.id, sp.my_vote === -1 ? 0 : -1)}
+                            className={`text-xs px-1.5 py-0.5 rounded transition-colors ${sp.my_vote === -1 ? 'text-rust-strong' : 'text-muted hover:text-rust-strong'}`}>
+                            👎
+                          </button>
+                        </div>
+                        <span className="text-[10px] text-muted">{sp.author_name}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Draw tab */}
           {tab === 'draw' && (
             <div className="p-3 space-y-2">
@@ -265,6 +432,23 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
                     placeholder="Название маршрута *"
                     className="input text-sm"
                   />
+                  {/* Route type */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {(['personal', 'tour'] as const).map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setRouteType(t)}
+                        className={`py-2 rounded-lg text-xs font-bold border-2 transition-all ${
+                          routeType === t
+                            ? t === 'tour' ? 'border-orange-400 bg-orange-400/20 text-orange-500' : 'border-green-500 bg-green-500/20 text-green-600'
+                            : 'border-line text-muted hover:border-moss/40'
+                        }`}
+                      >
+                        {t === 'personal' ? '🏍 Личный' : '🏕️ Тур'}
+                      </button>
+                    ))}
+                  </div>
                   <select
                     value={difficulty}
                     onChange={e => setDifficulty(e.target.value)}
@@ -311,6 +495,7 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
           zoom={4}
           options={{ streetViewControl: false, mapTypeId: 'terrain', fullscreenControl: false }}
           onLoad={map => { mapRef.current = map; }}
+          onClick={handleMapClick}
         >
           <DrawingManager
             onLoad={dm => { drawingRef.current = dm; }}
@@ -381,6 +566,35 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
               icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: '#22d3ee', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 }}
             />
           ) : null)}
+
+          {/* Spot markers */}
+          {spots.map(sp => {
+            const kindInfo = SPOT_KINDS.find(k => k.id === sp.kind);
+            return (
+              <Marker
+                key={'spot-' + sp.id}
+                position={{ lat: sp.lat, lng: sp.lng }}
+                onClick={() => { setTab('spots'); }}
+                label={{ text: SPOT_EMOJI[sp.kind] || '📍', fontSize: '18px' }}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 14,
+                  fillColor: kindInfo?.color ?? '#ef4444',
+                  fillOpacity: 0.85,
+                  strokeColor: '#fff',
+                  strokeWeight: 2,
+                }}
+              />
+            );
+          })}
+
+          {/* Pending spot marker */}
+          {pendingLatLng && (
+            <Marker
+              position={pendingLatLng}
+              icon={{ path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: '#f97316', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 }}
+            />
+          )}
         </GoogleMap>
 
         {/* Active item info popup */}

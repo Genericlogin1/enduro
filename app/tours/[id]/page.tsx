@@ -4,6 +4,7 @@ import Nav from '@/components/Nav';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import TourRegisterButton from '@/components/TourRegisterButton';
+import TourBookingForm from '@/components/TourBookingForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -150,22 +151,19 @@ export default async function TourPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* Register button */}
-        <div className="py-5">
-          {token ? (
-            <TourRegisterButton
-              tourId={tour.id}
-              initialRegistered={tour.registered_by_me}
-              isFull={isFull}
-            />
-          ) : (
-            <Link href={`/login?next=/tours/${tour.id}`} className="btn btn-primary w-full py-3 text-base">
-              Войди чтобы записаться
-            </Link>
+        {/* Booking form — доступна всем, авторизация не нужна */}
+        <div className="py-2">
+          <TourBookingForm
+            tourId={tour.id}
+            tourTitle={tour.title}
+            price={tour.price}
+            currency={tour.currency || '₽'}
+          />
+          {tour.regs_count > 0 && (
+            <p className="text-xs text-center mt-2" style={{ color: 'rgb(var(--text-muted))' }}>
+              {tour.regs_count} человек уже интересуются
+            </p>
           )}
-          <p className="text-xs text-muted text-center mt-2">
-            {tour.regs_count > 0 ? `${tour.regs_count} человек уже записались` : 'Будь первым!'}
-          </p>
         </div>
       </div>
       <Nav />

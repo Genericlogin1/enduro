@@ -9,13 +9,16 @@ import (
 )
 
 func RegisterRoutes(router fiber.Router, h *handler.PostHandler, jwtManager *jwtutil.Manager) {
-	posts := router.Group("/posts")
-	posts.Get("/", h.List)
-	posts.Get("/:id", h.GetByID)
+	auth := middleware.Auth(jwtManager)
+	optAuth := middleware.OptionalAuth(jwtManager)
 
-	auth := posts.Group("/", middleware.Auth(jwtManager))
-	auth.Post("/", h.Create)
-	auth.Patch("/:id", h.Update)
-	auth.Delete("/:id", h.Delete)
-	auth.Post("/:id/like", h.ToggleLike)
+	// Public — but with optional auth to populate liked_by_me
+	router.Get("/posts", optAuth, h.List)
+	router.Get("/posts/:id", optAuth, h.GetByID)
+
+	// Protected — per-route to avoid Fiber Group middleware leak
+	router.Post("/posts", auth, h.Create)
+	router.Patch("/posts/:id", auth, h.Update)
+	router.Delete("/posts/:id", auth, h.Delete)
+	router.Post("/posts/:id/like", auth, h.ToggleLike)
 }

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS spot_votes;
+DROP TABLE IF EXISTS spots;

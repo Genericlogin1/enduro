@@ -11,14 +11,18 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
   const token = await getServerToken();
   const { id } = params;
 
-  const [user, postsData, routesData] = await Promise.all([
+  const [user, postsData, routesData, followersData, followingData] = await Promise.all([
     apiFetch<any>(`/users/${id}`, {}, token ?? undefined).catch(() => null),
     apiFetch<{ posts: any[] }>(`/posts?author_id=${id}&limit=20`, {}, token ?? undefined).catch(() => ({ posts: [] })),
     apiFetch<{ routes: any[] }>(`/routes?author_id=${id}&limit=20`, {}, token ?? undefined).catch(() => ({ routes: [] })),
+    apiFetch<{ followers: any[] }>(`/users/${id}/followers?limit=1000`, {}, token ?? undefined).catch(() => ({ followers: [] })),
+    apiFetch<{ following: any[] }>(`/users/${id}/following?limit=1000`, {}, token ?? undefined).catch(() => ({ following: [] })),
   ]);
 
   const posts = postsData?.posts ?? [];
   const routes = routesData?.routes ?? [];
+  const followersCount = followersData?.followers?.length ?? 0;
+  const followingCount = followingData?.following?.length ?? 0;
   const name = user?.name || 'Rider';
   const initials = name.slice(0, 2).toUpperCase();
 
@@ -62,8 +66,11 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
               {user?.bio && (
                 <p className="text-xs text-muted mt-1.5 leading-relaxed">{user.bio}</p>
               )}
-              <div className="text-xs text-muted mt-1.5">
-                {posts.length} постов · {routes.length} маршрутов
+              <div className="flex gap-3 text-xs text-muted mt-1.5 flex-wrap">
+                <span><b className="text-ink">{followersCount}</b> подписчиков</span>
+                <span><b className="text-ink">{followingCount}</b> подписок</span>
+                <span><b className="text-ink">{posts.length}</b> постов</span>
+                <span><b className="text-ink">{routes.length}</b> маршрутов</span>
               </div>
               {/* Social links */}
               {(user?.telegram || user?.whatsapp || user?.instagram) && (

@@ -16,6 +16,7 @@ func RegisterRoutes(router fiber.Router, h *handler.TrackingHandler, jwtManager 
 	router.Post("/tracking/sessions", auth, h.StartSession)
 	router.Patch("/tracking/sessions/:id/finish", auth, h.FinishSession)
 	router.Get("/tracking/sessions/:id", auth, h.GetSession)
+	router.Get("/tracking/sessions/:id/gpx", auth, h.ExportGPX)
 	router.Post("/tracking/sessions/:id/points", auth, h.AddPoints)
 
 	// WebSocket — auth via ?token= query param

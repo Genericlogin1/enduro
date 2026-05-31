@@ -128,7 +128,7 @@ export default function PostForm() {
       <input
         value={location}
         onChange={e => setLocation(e.target.value)}
-        placeholder="Место (напр. Карпаты, Украина)"
+        placeholder="Карпаты, Алтай, Грузия..."
         className="input"
       />
       {error && <p className="text-rust-strong text-sm">{error}</p>}

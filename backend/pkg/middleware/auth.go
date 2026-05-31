@@ -36,3 +36,18 @@ func UserIDFromCtx(c *fiber.Ctx) (uuid.UUID, bool) {
 	id, ok := c.Locals(LocalsUserID).(uuid.UUID)
 	return id, ok
 }
+
+// OptionalAuth extracts the user ID from the token if present, but never blocks the request.
+// Use for public endpoints that show personalized data (e.g. liked_by_me).
+func OptionalAuth(jwtManager *jwtutil.Manager) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		header := c.Get("Authorization")
+		if strings.HasPrefix(header, "Bearer ") {
+			tokenStr := strings.TrimPrefix(header, "Bearer ")
+			if claims, err := jwtManager.Parse(tokenStr); err == nil {
+				c.Locals(LocalsUserID, claims.UserID)
+			}
+		}
+		return c.Next()
+	}
+}

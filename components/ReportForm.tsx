@@ -172,7 +172,7 @@ export default function ReportForm({ sessions, bikes }: {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">Регион</label>
-          <input value={region} onChange={e => setRegion(e.target.value)} placeholder="Карпаты, Украина" className="input" />
+          <input value={region} onChange={e => setRegion(e.target.value)} placeholder="Карпаты, Алтай, Грузия" className="input" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">Дата поездки</label>

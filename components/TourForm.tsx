@@ -119,7 +119,7 @@ export default function TourForm() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">Страна</label>
-          <input value={country} onChange={e => setCountry(e.target.value)} placeholder="Украина" className="input" />
+          <input value={country} onChange={e => setCountry(e.target.value)} placeholder="Карпаты, Алтай, Грузия..." className="input" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">Начало</label>

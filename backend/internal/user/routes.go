@@ -11,12 +11,12 @@ import (
 func RegisterRoutes(router fiber.Router, h *handler.UserHandler, jwtManager *jwtutil.Manager) {
 	auth := middleware.Auth(jwtManager)
 
+	// /users/me MUST be registered before /users/:id — Fiber matches :id first otherwise
+	router.Get("/users/me", auth, h.GetMe)
+
 	// Public read
 	router.Get("/users", h.List)
 	router.Get("/users/:id", h.GetByID)
-
-	// Protected — own profile
-	router.Get("/users/me", auth, h.GetMe)
 	router.Post("/users", auth, h.Create)
 	router.Patch("/users/:id", auth, h.Update)
 	router.Delete("/users/:id", auth, h.Delete)

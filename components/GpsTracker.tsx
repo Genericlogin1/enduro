@@ -14,7 +14,8 @@ const LIVE_BASE = typeof window !== 'undefined' ? window.location.origin : '';
 
 export default function GpsTracker() {
   const router = useRouter();
-  const [status, setStatus] = useState<'idle' | 'starting' | 'recording' | 'finishing' | 'done'>('idle');
+  const [status, setStatus] = useState<'idle' | 'starting' | 'recording' | 'paused' | 'finishing' | 'done'>('idle');
+  const pausedElapsedRef = useRef(0);
   const [session, setSession] = useState<Session | null>(null);
   const [pointCount, setPointCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export default function GpsTracker() {
   // Timer
   useEffect(() => {
     if (status === 'recording') {
-      startTimeRef.current = Date.now() - elapsed * 1000;
+      startTimeRef.current = Date.now() - pausedElapsedRef.current * 1000;
       timerRef.current = setInterval(() => {
         setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
       }, 1000);
@@ -203,6 +204,28 @@ export default function GpsTracker() {
       setError(e.message || 'Ошибка запуска сессии');
       setStatus('idle');
     }
+  }
+
+  function pauseRecording() {
+    if (status !== 'recording') return;
+    pausedElapsedRef.current = elapsed;
+    if (watchRef.current !== null) {
+      navigator.geolocation.clearWatch(watchRef.current);
+      watchRef.current = null;
+    }
+    if (flushRef.current) { clearInterval(flushRef.current); flushRef.current = null; }
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setStatus('paused');
+  }
+
+  function resumeRecording() {
+    if (status !== 'paused') return;
+    setStatus('recording');
+    watchRef.current = navigator.geolocation.watchPosition(onPosition, e => setGeoError(e.message), {
+      enableHighAccuracy: true, maximumAge: 0, timeout: 10000,
+    });
+    flushRef.current = setInterval(flushPoints, 5000);
+    acquireWakeLock();
   }
 
   async function stopRecording() {
@@ -373,9 +396,49 @@ export default function GpsTracker() {
               </div>
             )}
 
-            <button onClick={stopRecording} className="w-full bg-rust hover:bg-rust/80 text-white font-semibold rounded-lg py-3">
-              Стоп и сохранить
-            </button>
+            {/* Pause + Stop */}
+            <div className="flex gap-2">
+              <button
+                onClick={pauseRecording}
+                className="flex-1 font-semibold rounded-lg py-3 text-sm border-2 transition-all"
+                style={{ borderColor: 'rgb(var(--border))', color: 'rgb(var(--text-muted))' }}
+              >
+                ⏸ Пауза
+              </button>
+              <button onClick={stopRecording}
+                className="flex-1 font-semibold rounded-lg py-3 text-sm text-white"
+                style={{ background: 'rgb(var(--rust))' }}>
+                ⏹ Стоп и сохранить
+              </button>
+            </div>
+          </>
+        )}
+
+        {status === 'paused' && (
+          <>
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ background: 'rgb(var(--text-muted))' }} />
+                <span className="font-semibold text-sm uppercase tracking-wider" style={{ color: 'rgb(var(--text-muted))' }}>Пауза</span>
+              </div>
+              <div className="font-display text-5xl" style={{ color: 'rgb(var(--text-primary))' }}>{formatTime(elapsed)}</div>
+              <p className="text-sm" style={{ color: 'rgb(var(--text-muted))' }}>{pointCount} точек записано</p>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={resumeRecording}
+                className="flex-1 font-bold rounded-lg py-3 text-sm"
+                style={{ background: 'rgb(var(--accent))', color: '#080909' }}
+              >
+                ▶ Продолжить
+              </button>
+              <button onClick={stopRecording}
+                className="flex-1 font-semibold rounded-lg py-3 text-sm text-white"
+                style={{ background: 'rgb(var(--rust))' }}>
+                ⏹ Завершить
+              </button>
+            </div>
           </>
         )}
 

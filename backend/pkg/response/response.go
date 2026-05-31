@@ -30,6 +30,7 @@ func NoContent(c *fiber.Ctx) error {
 }
 
 func Error(c *fiber.Ctx, err error) error {
+	// Typed app error
 	var appErr *apperrors.AppError
 	if errors.As(err, &appErr) {
 		status := statusFromSentinel(appErr.Err)
@@ -38,7 +39,23 @@ func Error(c *fiber.Ctx, err error) error {
 		})
 	}
 
-	// fallback for sentinel errors without wrapper
+	// Fiber native errors (ErrBadRequest, ErrNotFound, etc.)
+	var fiberErr *fiber.Error
+	if errors.As(err, &fiberErr) {
+		code := "REQUEST_ERROR"
+		if fiberErr.Code == fiber.StatusUnauthorized {
+			code = "UNAUTHORIZED"
+		} else if fiberErr.Code == fiber.StatusNotFound {
+			code = "NOT_FOUND"
+		} else if fiberErr.Code == fiber.StatusForbidden {
+			code = "FORBIDDEN"
+		}
+		return c.Status(fiberErr.Code).JSON(errorResponse{
+			Error: errorBody{Code: code, Message: fiberErr.Message},
+		})
+	}
+
+	// Sentinel errors without wrapper
 	status := statusFromSentinel(err)
 	return c.Status(status).JSON(errorResponse{
 		Error: errorBody{Code: "INTERNAL_ERROR", Message: "internal server error"},
