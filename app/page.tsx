@@ -46,10 +46,10 @@ function LandingPage() {
   ];
 
   const stats = [
-    { value: '2 500+', label: 'Маршрутов' },
-    { value: '180+', label: 'Туров' },
-    { value: '12 000+', label: 'Райдеров' },
-    { value: '40+', label: 'Стран' },
+    { value: 'GPS', label: 'Трекинг офлайн' },
+    { value: 'GPX', label: 'Экспорт для Garmin' },
+    { value: 'Live', label: 'Шаринг трека' },
+    { value: '0₽', label: 'Полностью бесплатно' },
   ];
 
   return (

@@ -51,7 +51,7 @@ function LoginForm() {
           <h1 className="font-display text-4xl leading-none" style={{ color: 'rgb(var(--text-primary))' }}>
             ENDURO<span style={{ color: 'rgb(var(--accent))' }}>.</span>WORLD
           </h1>
-          <p className="text-[11px] text-muted uppercase tracking-widest">Sign in to continue</p>
+          <p className="text-[11px] text-muted uppercase tracking-widest">Войди чтобы продолжить</p>
         </div>
         {error && <div className="text-sm text-rust-strong border border-rust/40 bg-rust/10 rounded-md px-3 py-2">{error}</div>}
         <input
@@ -65,20 +65,20 @@ function LoginForm() {
         <input
           type="password"
           required
-          placeholder="Password"
+          placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="input"
         />
         <button type="submit" disabled={loading} className="btn btn-primary w-full disabled:opacity-60">
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? 'Входим...' : 'Войти'}
         </button>
         <div className="flex items-center justify-between text-sm">
-          <Link href="/" className="text-muted hover:text-ink hover:underline">Back to feed</Link>
-          <Link href="/forgot-password" className="text-muted hover:text-moss-strong hover:underline">Forgot password?</Link>
+          <Link href="/" className="text-muted hover:text-ink hover:underline">На главную</Link>
+          <Link href="/forgot-password" className="text-muted hover:text-moss-strong hover:underline">Забыл пароль?</Link>
         </div>
         <p className="text-center text-sm text-muted">
-          No account? <Link href="/signup" className="text-moss-strong hover:underline">Sign up</Link>
+          Нет аккаунта? <Link href="/signup" className="text-moss-strong hover:underline">Зарегистрироваться</Link>
         </p>
       </form>
     </main>

@@ -17,20 +17,20 @@ export default async function MePage() {
       <div className="min-h-screen pb-nav">
         <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
           <div className="max-w-xl mx-auto px-4 py-3">
-            <h1 className="font-display text-3xl leading-none text-ink">ME</h1>
-            <p className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">Your trail journal</p>
+            <h1 className="font-display text-3xl leading-none text-ink">ПРОФИЛЬ</h1>
+            <p className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">Твой трейл-журнал</p>
           </div>
         </header>
         <main className="max-w-xl mx-auto px-4 py-10">
           <div className="card p-8 text-center space-y-3">
             <div className="text-5xl">🏕️</div>
-            <h2 className="font-display text-2xl text-ink">Camp not set up yet</h2>
+            <h2 className="font-display text-2xl text-ink">Войди чтобы продолжить</h2>
             <p className="text-sm text-muted max-w-sm mx-auto">
-              Sign in to save your routes, post rides and keep your trail journal.
+              Записывай GPS-треки, сохраняй маршруты, веди журнал покатушек.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-3">
-              <Link href="/login?next=/me" className="btn btn-primary">Sign in</Link>
-              <Link href="/signup" className="btn btn-ghost">Create account</Link>
+              <Link href="/login?next=/me" className="btn btn-primary">Войти</Link>
+              <Link href="/signup" className="btn btn-ghost">Создать аккаунт</Link>
             </div>
           </div>
         </main>
@@ -133,10 +133,10 @@ export default async function MePage() {
           {/* Stats row */}
           <div className="grid grid-cols-4 gap-2 mt-5 mb-3">
             {[
-              { label: 'Rides', value: totalRides, href: '#gps-rides' },
-              { label: 'Time', value: totalRides > 0 ? durationLabel : '—', href: '#gps-rides' },
-              { label: 'Routes', value: routes.length, href: '#routes' },
-              { label: 'Posts', value: posts.length, href: '#posts' },
+              { label: 'Треки', value: totalRides, href: '#gps-rides' },
+              { label: 'Время', value: totalRides > 0 ? durationLabel : '—', href: '#gps-rides' },
+              { label: 'Маршруты', value: routes.length, href: '#routes' },
+              { label: 'Посты', value: posts.length, href: '#posts' },
             ].map(({ label, value, href }) => (
               <a key={label} href={href}
                 className="rounded-xl py-3 text-center transition-all hover:scale-105 cursor-pointer"
@@ -170,7 +170,7 @@ export default async function MePage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-base">📡</span>
-                <h2 className="font-display text-xl leading-none">GPS RIDES</h2>
+                <h2 className="font-display text-xl leading-none">GPS ТРЕКИ</h2>
                 <span className="font-display text-base leading-none" style={{ color: 'rgb(var(--accent))' }}>{sessions.length}</span>
               </div>
               <Link href="/gps" className="text-[11px] font-bold uppercase tracking-wider"
