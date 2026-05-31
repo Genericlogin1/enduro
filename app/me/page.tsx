@@ -3,6 +3,7 @@ import Nav from '@/components/Nav';
 import PostCard from '@/components/PostCard';
 import Garage from '@/components/Garage';
 import DeleteButton from '@/components/DeleteButton';
+import SeasonCard from '@/components/SeasonCard';
 import { apiFetch } from '@/lib/api';
 import { getServerToken } from '@/lib/serverToken';
 import SignOutButton from '@/components/SignOutButton';
@@ -130,64 +131,33 @@ export default async function MePage() {
             </div>
           </div>
 
-          {/* Stats row — кликабельные */}
-          <div className="grid grid-cols-4 gap-2 mt-5 mb-2">
+          {/* Stats row */}
+          <div className="grid grid-cols-4 gap-2 mt-5 mb-3">
             {[
               { label: 'Rides', value: totalRides, href: '#gps-rides' },
               { label: 'Time', value: totalRides > 0 ? durationLabel : '—', href: '#gps-rides' },
               { label: 'Routes', value: routes.length, href: '#routes' },
               { label: 'Posts', value: posts.length, href: '#posts' },
             ].map(({ label, value, href }) => (
-              <a key={label} href={href} className="card py-3 text-center hover:border-moss/40 transition-colors cursor-pointer">
-                <div className="font-display text-xl leading-none text-ink">{value}</div>
-                <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">{label}</div>
+              <a key={label} href={href}
+                className="rounded-xl py-3 text-center transition-all hover:scale-105 cursor-pointer"
+                style={{ background: 'rgb(var(--bg-elev-2))', border: '1px solid rgb(var(--border) / 0.5)' }}>
+                <div className="font-display text-2xl leading-none" style={{ color: 'rgb(var(--accent))' }}>{value}</div>
+                <div className="text-[9px] text-muted mt-1 uppercase tracking-wider">{label}</div>
               </a>
             ))}
           </div>
 
           {/* Season card */}
-          {stats && (stats.total_rides > 0 || stats.total_routes > 0) && (
-            <div className="mt-3 rounded-xl overflow-hidden relative"
-              style={{ background: 'linear-gradient(135deg, rgb(var(--accent) / 0.15) 0%, rgb(var(--rust) / 0.1) 100%)', border: '1px solid rgb(var(--accent) / 0.3)' }}>
-              <div className="px-4 py-3">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="font-display text-sm tracking-wider uppercase" style={{ color: 'rgb(var(--accent))' }}>
-                    Сезон {currentYear}
-                  </div>
-                  <div className="text-xs text-muted">Enduro World</div>
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div>
-                    <div className="font-display text-3xl leading-none" style={{ color: 'rgb(var(--accent))' }}>
-                      {stats.this_year_rides}
-                    </div>
-                    <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">поездок</div>
-                  </div>
-                  <div>
-                    <div className="font-display text-3xl leading-none" style={{ color: 'rgb(var(--accent))' }}>
-                      {stats.total_routes}
-                    </div>
-                    <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">маршрутов</div>
-                  </div>
-                  <div>
-                    <div className="font-display text-3xl leading-none" style={{ color: 'rgb(var(--accent))' }}>
-                      {stats.total_posts}
-                    </div>
-                    <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">постов</div>
-                  </div>
-                </div>
-                {stats.top_regions && stats.top_regions.length > 0 && (
-                  <div className="mt-3 flex gap-1.5 flex-wrap">
-                    {stats.top_regions.map((r: string) => (
-                      <span key={r} className="text-[10px] font-bold px-2 py-0.5 rounded"
-                        style={{ background: 'rgb(var(--accent) / 0.15)', color: 'rgb(var(--accent))' }}>
-                        📍 {r}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+          {stats && (
+            <SeasonCard
+              year={currentYear}
+              thisYearRides={stats.this_year_rides ?? 0}
+              totalRoutes={stats.total_routes ?? 0}
+              totalPosts={stats.total_posts ?? 0}
+              topRegions={stats.top_regions ?? []}
+              userName={userName}
+            />
           )}
         </div>
       </div>
@@ -198,27 +168,40 @@ export default async function MePage() {
 
         {sessions.length > 0 && (
           <section id="gps-rides">
-            <div className="flex items-baseline justify-between mb-3">
-              <h2 className="font-display text-xl">GPS rides <span className="text-muted text-base">({sessions.length})</span></h2>
-              <Link href="/gps" className="text-xs text-moss-strong hover:underline">+ New ride</Link>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">📡</span>
+                <h2 className="font-display text-xl leading-none">GPS RIDES</h2>
+                <span className="font-display text-base leading-none" style={{ color: 'rgb(var(--accent))' }}>{sessions.length}</span>
+              </div>
+              <Link href="/gps" className="text-[11px] font-bold uppercase tracking-wider"
+                style={{ color: 'rgb(var(--accent))' }}>+ ЗАПИСЬ</Link>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {sessions.map((s: any) => {
                 const mins = Math.round((s.duration_sec || 0) / 60);
                 const km = s.distance_km != null ? s.distance_km.toFixed(1) : null;
+                const isLive = s.status === 'active';
                 return (
-                  <Link key={s.id} href={`/gps/sessions/${s.id}`} className="card p-3 flex items-center justify-between gap-3 hover:border-moss/40 transition-colors">
+                  <Link key={s.id} href={`/gps/sessions/${s.id}`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:scale-[1.01]"
+                    style={{ background: 'rgb(var(--bg-elev-2))', border: isLive ? '1px solid rgb(var(--rust) / 0.4)' : '1px solid rgb(var(--border) / 0.4)' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm"
+                      style={{ background: isLive ? 'rgb(var(--rust) / 0.15)' : 'rgb(var(--accent) / 0.08)' }}>
+                      {isLive ? '🔴' : '📍'}
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm truncate">{s.name || 'Unnamed ride'}</div>
-                      <div className="text-xs text-muted mt-0.5">
-                        {s.points_count} pts
-                        {mins > 0 && ` · ${mins} min`}
-                        {km && ` · ${km} km`}
+                      <div className="font-semibold text-sm truncate">{s.name || 'Без названия'}</div>
+                      <div className="flex gap-2 mt-0.5">
+                        {km && <span className="text-[10px] font-bold" style={{ color: 'rgb(var(--accent))' }}>{km} km</span>}
+                        {mins > 0 && <span className="text-[10px] text-muted">{mins} мин</span>}
                       </div>
                     </div>
-                    <span className={`chip ${s.status === 'active' ? 'chip-rust' : ''}`}>
-                      {s.status === 'active' ? 'live' : 'done'}
-                    </span>
+                    {isLive && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse"
+                      style={{ background: 'rgb(var(--rust) / 0.15)', color: 'rgb(var(--rust-strong))' }}>LIVE</span>}
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-muted flex-shrink-0">
+                      <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </Link>
                 );
               })}
@@ -226,59 +209,64 @@ export default async function MePage() {
           </section>
         )}
 
-        <section id="routes">
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="font-display text-xl">Мои маршруты <span className="text-muted text-base">({routes?.length || 0})</span></h2>
-            <Link href="/map" className="text-xs text-moss-strong hover:underline">Открыть карту</Link>
-          </div>
-          {!routes || routes.length === 0 ? (
-            <div className="card p-6 text-center text-muted text-sm">
-              Нет маршрутов.{' '}
-              <Link href="/map" className="text-moss-strong">Нарисуй первый →</Link>
+        {routes && routes.length > 0 && (
+          <section id="routes">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🗺️</span>
+                <h2 className="font-display text-xl leading-none">МАРШРУТЫ</h2>
+                <span className="font-display text-base leading-none" style={{ color: 'rgb(var(--accent))' }}>{routes.length}</span>
+              </div>
+              <Link href="/map" className="text-[11px] font-bold uppercase tracking-wider text-muted hover:text-ink">КАРТА</Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {routes.map((r: any) => (
-                <div key={r.id} className="card overflow-hidden">
-                  <div className="p-3">
-                    <div className="font-semibold text-sm truncate">{r.name}</div>
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {r.difficulty && <span className="chip chip-rust">{r.difficulty}</span>}
-                      {r.distance_km != null && <span className="chip">{r.distance_km} km</span>}
-                      {r.country && <span className="chip">{r.country}</span>}
+            <div className="grid grid-cols-2 gap-2">
+              {routes.map((r: any) => {
+                const diffColors: Record<string, string> = { Easy: '#4ade80', Medium: '#facc15', Hard: '#f97316', Expert: '#ef4444' };
+                return (
+                  <div key={r.id}
+                    className="rounded-xl p-3 flex flex-col gap-2"
+                    style={{ background: 'rgb(var(--bg-elev-2))', border: '1px solid rgb(var(--border) / 0.4)' }}>
+                    <div className="font-semibold text-sm leading-tight">{r.name}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {r.difficulty && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                          style={{ background: (diffColors[r.difficulty] || '#888') + '20', color: diffColors[r.difficulty] || '#888' }}>
+                          {r.difficulty}
+                        </span>
+                      )}
+                      {r.distance_km > 0 && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                          style={{ background: 'rgb(var(--accent) / 0.1)', color: 'rgb(var(--accent))' }}>
+                          {r.distance_km} km
+                        </span>
+                      )}
                     </div>
-                    <div className="mt-2 pt-2 border-t border-line">
-                      <DeleteButton
-                        path={`/routes/${r.id}`}
-                        label="Удалить"
-                        confirm={`Удалить маршрут «${r.name}»?`}
-                      />
-                    </div>
+                    <DeleteButton path={`/routes/${r.id}`} label="Удалить" confirm={`Удалить «${r.name}»?`} />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          )}
-        </section>
+          </section>
+        )}
 
-        <section id="posts">
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="font-display text-xl">Мои посты <span className="text-muted text-base">({posts?.length || 0})</span></h2>
-            <Link href="/new" className="text-xs text-rust-strong hover:underline">+ Новый пост</Link>
-          </div>
-          {!posts || posts.length === 0 ? (
-            <div className="card p-6 text-center text-muted text-sm">
-              Постов нет.{' '}
-              <Link href="/new" className="text-rust-strong">Создай первый →</Link>
+        {posts && posts.length > 0 && (
+          <section id="posts">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">📸</span>
+                <h2 className="font-display text-xl leading-none">ПОСТЫ</h2>
+                <span className="font-display text-base leading-none" style={{ color: 'rgb(var(--accent))' }}>{posts.length}</span>
+              </div>
+              <Link href="/new" className="text-[11px] font-bold uppercase tracking-wider"
+                style={{ color: 'rgb(var(--rust-strong))' }}>+ ПОСТ</Link>
             </div>
-          ) : (
             <div className="space-y-4">
               {posts.map((p: any) => (
                 <PostCard key={p.id} post={p} isLoggedIn={true} canDelete={true} />
               ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
       </main>
 
       <Nav active="me" />
