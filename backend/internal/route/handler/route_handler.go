@@ -36,7 +36,13 @@ func (h *RouteHandler) GetByID(c *fiber.Ctx) error {
 	if err != nil {
 		return response.Error(c, fiber.ErrBadRequest)
 	}
-	resp, err := h.uc.GetByID(c.UserContext(), id)
+	callerID, ok := middleware.UserIDFromCtx(c)
+	var resp dto.RouteResponse
+	if ok {
+		resp, err = h.uc.GetByIDForUser(c.UserContext(), id, callerID)
+	} else {
+		resp, err = h.uc.GetByID(c.UserContext(), id)
+	}
 	if err != nil {
 		return response.Error(c, err)
 	}
@@ -48,6 +54,7 @@ func (h *RouteHandler) List(c *fiber.Ctx) error {
 		Limit:  c.QueryInt("limit", 20),
 		Offset: c.QueryInt("offset", 0),
 		Search: c.Query("search"),
+		SortBy: c.Query("sort_by"),
 	}
 	if d := c.Query("difficulty"); d != "" {
 		filter.Difficulty = &d
@@ -94,4 +101,22 @@ func (h *RouteHandler) Delete(c *fiber.Ctx) error {
 		return response.Error(c, err)
 	}
 	return response.NoContent(c)
+}
+
+func (h *RouteHandler) Rate(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.ErrBadRequest)
+	}
+	callerID, _ := middleware.UserIDFromCtx(c)
+	var body struct {
+		Rating int `json:"rating"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return response.Error(c, fiber.ErrBadRequest)
+	}
+	if err := h.uc.Rate(c.UserContext(), id, callerID, body.Rating); err != nil {
+		return response.Error(c, err)
+	}
+	return c.JSON(fiber.Map{"ok": true})
 }

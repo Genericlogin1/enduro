@@ -38,13 +38,35 @@ func (r *routeRepository) q(ctx context.Context) querier {
 	return r.pool
 }
 
-const selectCols = `id, author_id, name, description, difficulty, country, distance_km, geojson, start_lat, start_lng, created_at, updated_at`
+// selectCols with rating aggregation; $N placeholder for optional user_id (for my_rating)
+const selectCols = `r.id, r.author_id, r.name, r.description, r.difficulty, r.country,
+	r.distance_km, r.geojson, r.start_lat, r.start_lng, r.created_at, r.updated_at,
+	COALESCE(AVG(rr.rating), 0)::float8 as avg_rating,
+	COUNT(rr.rating)::int as rating_count`
+
+func selectColsWithMyRating(userArgN int) string {
+	return selectCols + fmt.Sprintf(`,
+	COALESCE((SELECT rating FROM route_ratings WHERE route_id=r.id AND user_id=$%d), 0)::int as my_rating`, userArgN)
+}
+
+const fromRatings = ` FROM routes r LEFT JOIN route_ratings rr ON rr.route_id = r.id`
 
 func scanRoute(row pgx.Row) (*entity.Route, error) {
 	rt := &entity.Route{}
 	err := row.Scan(&rt.ID, &rt.AuthorID, &rt.Name, &rt.Description, &rt.Difficulty,
 		&rt.Country, &rt.DistanceKm, &rt.GeoJSON, &rt.StartLat, &rt.StartLng,
-		&rt.CreatedAt, &rt.UpdatedAt)
+		&rt.CreatedAt, &rt.UpdatedAt, &rt.AvgRating, &rt.RatingCount)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, apperrors.ErrNotFound
+	}
+	return rt, err
+}
+
+func scanRouteWithMyRating(row pgx.Row) (*entity.Route, error) {
+	rt := &entity.Route{}
+	err := row.Scan(&rt.ID, &rt.AuthorID, &rt.Name, &rt.Description, &rt.Difficulty,
+		&rt.Country, &rt.DistanceKm, &rt.GeoJSON, &rt.StartLat, &rt.StartLng,
+		&rt.CreatedAt, &rt.UpdatedAt, &rt.AvgRating, &rt.RatingCount, &rt.MyRating)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, apperrors.ErrNotFound
 	}
@@ -61,8 +83,13 @@ func (r *routeRepository) Create(ctx context.Context, rt *entity.Route) error {
 }
 
 func (r *routeRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Route, error) {
-	q := `SELECT ` + selectCols + ` FROM routes WHERE id=$1`
+	q := `SELECT ` + selectCols + fromRatings + ` WHERE r.id=$1 GROUP BY r.id`
 	return scanRoute(r.q(ctx).QueryRow(ctx, q, id))
+}
+
+func (r *routeRepository) GetByIDForUser(ctx context.Context, id, userID uuid.UUID) (*entity.Route, error) {
+	q := `SELECT ` + selectColsWithMyRating(2) + fromRatings + ` WHERE r.id=$1 GROUP BY r.id`
+	return scanRouteWithMyRating(r.q(ctx).QueryRow(ctx, q, id, userID))
 }
 
 func (r *routeRepository) List(ctx context.Context, filter dto.ListRoutesFilter) ([]*entity.Route, error) {
@@ -91,11 +118,18 @@ func (r *routeRepository) List(ctx context.Context, filter dto.ListRoutesFilter)
 		n++
 	}
 
-	q := `SELECT ` + selectCols + ` FROM routes`
+	orderBy := `r.created_at DESC`
+	if filter.SortBy == "rating" {
+		orderBy = `avg_rating DESC, rating_count DESC`
+	}
+
+	q := `SELECT ` + selectCols + fromRatings
 	if len(where) > 0 {
 		q += ` WHERE ` + joinAnd(where)
 	}
-	q += fmt.Sprintf(` ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, n, n+1)
+	q += ` GROUP BY r.id`
+	q += ` ORDER BY ` + orderBy
+	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, n, n+1)
 	args = append(args, filter.Limit, filter.Offset)
 
 	rows, err := r.q(ctx).Query(ctx, q, args...)
@@ -113,6 +147,15 @@ func (r *routeRepository) List(ctx context.Context, filter dto.ListRoutesFilter)
 		routes = append(routes, rt)
 	}
 	return routes, rows.Err()
+}
+
+func (r *routeRepository) Rate(ctx context.Context, routeID, userID uuid.UUID, rating int) error {
+	_, err := r.pool.Exec(ctx, `
+		INSERT INTO route_ratings (route_id, user_id, rating)
+		VALUES ($1,$2,$3)
+		ON CONFLICT (route_id, user_id) DO UPDATE SET rating=$3, created_at=now()`,
+		routeID, userID, rating)
+	return err
 }
 
 func (r *routeRepository) Update(ctx context.Context, rt *entity.Route) error {

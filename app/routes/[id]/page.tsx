@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Nav from '@/components/Nav';
+import StarRating from '@/components/StarRating';
 import { apiFetch } from '@/lib/api';
+import { getServerToken } from '@/lib/serverToken';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,27 +18,24 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   };
 }
 
-const diffColor: Record<string, string> = {
-  Easy: 'chip bg-green-400/15 text-green-400',
-  Medium: 'chip bg-yellow-400/15 text-yellow-400',
-  Hard: 'chip bg-orange-400/15 text-orange-400',
-  Expert: 'chip bg-red-400/15 text-red-400',
+const diffColors: Record<string, string> = {
+  Easy: '#4ade80', Medium: '#facc15', Hard: '#f97316', Expert: '#ef4444',
 };
 
 export default async function RouteDetailPage({ params }: { params: { id: string } }) {
-  const route = await apiFetch<any>(`/routes/${params.id}`).catch(() => null);
+  const token = await getServerToken();
+  const route = await apiFetch<any>(`/routes/${params.id}`, {}, token).catch(() => null);
   if (!route) notFound();
 
   const author = route.author_name || 'Rider';
   const initials = author.slice(0, 2).toUpperCase();
 
-  // Schema.org structured data for SEO
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'SportsEvent',
     name: route.name,
     description: route.description || `Эндуро маршрут ${route.name}`,
-    location: { '@type': 'Place', name: route.country || route.region || 'Unknown' },
+    location: { '@type': 'Place', name: route.country || 'Unknown' },
     sport: 'Enduro Motorcycle',
   };
 
@@ -53,11 +52,21 @@ export default async function RouteDetailPage({ params }: { params: { id: string
 
       <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
         {/* Author */}
-        <div className="flex items-center gap-3">
-          <Link href={`/riders/${route.author_id}`}>
-            <div className="w-9 h-9 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center text-sm font-bold">{initials}</div>
-          </Link>
-          <Link href={`/riders/${route.author_id}`} className="font-semibold text-sm hover:text-moss-strong">{author}</Link>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href={`/riders/${route.author_id}`}>
+              <div className="w-9 h-9 rounded-full bg-moss/20 text-moss-strong flex items-center justify-center text-sm font-bold">{initials}</div>
+            </Link>
+            <Link href={`/riders/${route.author_id}`} className="font-semibold text-sm hover:text-moss-strong">{author}</Link>
+          </div>
+          {/* Rating */}
+          <StarRating
+            routeId={route.id}
+            avgRating={route.avg_rating ?? 0}
+            ratingCount={route.rating_count ?? 0}
+            myRating={route.my_rating ?? 0}
+            isLoggedIn={!!token}
+          />
         </div>
 
         {/* Stats grid */}
@@ -65,12 +74,12 @@ export default async function RouteDetailPage({ params }: { params: { id: string
           {route.distance_km != null && (
             <div className="card p-3 text-center">
               <div className="font-display text-xl">{route.distance_km}</div>
-              <div className="text-[10px] text-muted uppercase tracking-wider">km</div>
+              <div className="text-[10px] text-muted uppercase tracking-wider">км</div>
             </div>
           )}
           {route.difficulty && (
             <div className="card p-3 text-center">
-              <div className={`font-bold text-sm ${diffColor[route.difficulty]?.includes('green') ? 'text-green-400' : diffColor[route.difficulty]?.includes('yellow') ? 'text-yellow-400' : diffColor[route.difficulty]?.includes('orange') ? 'text-orange-400' : 'text-red-400'}`}>
+              <div className="font-bold text-sm" style={{ color: diffColors[route.difficulty] }}>
                 {route.difficulty}
               </div>
               <div className="text-[10px] text-muted uppercase tracking-wider">Сложность</div>
@@ -79,7 +88,7 @@ export default async function RouteDetailPage({ params }: { params: { id: string
           {route.country && (
             <div className="card p-3 text-center">
               <div className="font-semibold text-sm truncate">{route.country}</div>
-              <div className="text-[10px] text-muted uppercase tracking-wider">Страна</div>
+              <div className="text-[10px] text-muted uppercase tracking-wider">Регион</div>
             </div>
           )}
         </div>
@@ -92,7 +101,7 @@ export default async function RouteDetailPage({ params }: { params: { id: string
           </div>
         )}
 
-        {/* Map preview placeholder */}
+        {/* Map link */}
         <div className="card p-4">
           <h2 className="font-display text-lg mb-2">Карта</h2>
           <Link href="/map" className="btn btn-ghost w-full text-sm">
@@ -100,7 +109,6 @@ export default async function RouteDetailPage({ params }: { params: { id: string
           </Link>
         </div>
 
-        {/* Meta */}
         <div className="text-xs text-muted">
           Добавлен {new Date(route.created_at).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}
         </div>

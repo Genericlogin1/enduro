@@ -33,7 +33,9 @@ type Route = {
   start_lat: number | null;
   start_lng: number | null;
   country: string | null;
-  route_type?: string; // 'personal' | 'tour'
+  route_type?: string;
+  avg_rating: number;
+  rating_count: number;
 };
 
 type GpsTrack = {
@@ -92,6 +94,7 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
   const [active, setActive] = useState<ActiveItem | null>(null);
   const [gpsTracks, setGpsTracks] = useState<GpsTrack[]>([]);
   const [tab, setTab] = useState<'routes' | 'gps' | 'draw' | 'spots'>('routes');
+  const [sortBy, setSortBy] = useState<'created_at' | 'rating'>('created_at');
   const [spots, setSpots] = useState<Spot[]>([]);
   const [spotKind, setSpotKind] = useState('danger');
   const [spotTitle, setSpotTitle] = useState('');
@@ -263,18 +266,29 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
           {/* Routes tab */}
           {tab === 'routes' && (
             <div className="p-2 space-y-1">
-              {/* Legend */}
+              {/* Sort + Legend */}
               {routes.length > 0 && (
-                <div className="flex gap-3 px-2 py-1.5 text-[10px] text-muted">
-                  <span className="flex items-center gap-1"><span className="w-3 h-1 rounded-full bg-green-400 inline-block" />Личные</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-1 rounded-full bg-orange-400 inline-block" />Туры</span>
+                <div className="flex items-center justify-between px-2 py-1.5">
+                  <div className="flex gap-3 text-[10px] text-muted">
+                    <span className="flex items-center gap-1"><span className="w-3 h-1 rounded-full bg-green-400 inline-block" />Личные</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-1 rounded-full bg-orange-400 inline-block" />Туры</span>
+                  </div>
+                  <button
+                    onClick={() => setSortBy(s => s === 'rating' ? 'created_at' : 'rating')}
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded transition-colors ${sortBy === 'rating' ? 'bg-accent/20 text-accent' : 'text-muted hover:text-ink'}`}
+                  >
+                    {sortBy === 'rating' ? '★ Рейтинг' : 'Новые'}
+                  </button>
                 </div>
               )}
               {routes.length === 0 ? (
                 <div className="p-4 text-center text-muted text-xs">
                   Нет маршрутов. Перейди на вкладку «Нарисовать» и создай первый!
                 </div>
-              ) : routes.map(r => (
+              ) : [...routes].sort((a, b) => sortBy === 'rating'
+                  ? (b.avg_rating ?? 0) - (a.avg_rating ?? 0)
+                  : 0
+                ).map(r => (
                 <button
                   key={r.id}
                   onClick={() => { setActive({ kind: 'route', data: r }); fitToRoute(r); }}
@@ -294,6 +308,11 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
                     {r.distance_km && <span className="text-[10px] text-muted">{r.distance_km} km</span>}
                     {r.country && <span className="text-[10px] text-muted">{r.country}</span>}
                     {r.route_type === 'tour' && <span className="text-[10px] text-orange-400 font-bold">Тур</span>}
+                    {r.avg_rating > 0 && (
+                      <span className="text-[10px] font-bold" style={{ color: 'rgb(var(--accent))' }}>
+                        ★ {r.avg_rating.toFixed(1)}
+                      </span>
+                    )}
                   </div>
                 </button>
               ))}

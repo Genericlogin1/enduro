@@ -9,14 +9,14 @@ import (
 )
 
 func RegisterRoutes(router fiber.Router, h *handler.RouteHandler, jwtManager *jwtutil.Manager) {
-	auth := middleware.Auth(jwtManager)
+	auth    := middleware.Auth(jwtManager)
+	optAuth := middleware.OptionalAuth(jwtManager)
 
-	// Public
 	router.Get("/routes", h.List)
-	router.Get("/routes/:id", h.GetByID)
+	router.Get("/routes/:id", optAuth, h.GetByID)
 
-	// Protected — per-route to avoid Fiber Group middleware leak
 	router.Post("/routes", auth, h.Create)
 	router.Patch("/routes/:id", auth, h.Update)
 	router.Delete("/routes/:id", auth, h.Delete)
+	router.Post("/routes/:id/rate", auth, h.Rate)
 }

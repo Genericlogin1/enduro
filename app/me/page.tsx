@@ -47,15 +47,18 @@ export default async function MePage() {
     userId = payload.user_id || payload.sub || '';
   } catch {}
 
-  const [postsData, routesData, sessionsData, userInfo] = await Promise.all([
+  const [postsData, routesData, sessionsData, userInfo, statsData] = await Promise.all([
     userId ? apiFetch<{ posts: any[] }>(`/posts?author_id=${userId}&limit=20`, {}, token).catch(() => ({ posts: [] })) : { posts: [] },
     userId ? apiFetch<{ routes: any[] }>(`/routes?author_id=${userId}&limit=20`, {}, token).catch(() => ({ routes: [] })) : { routes: [] },
     token ? apiFetch<{ sessions: any[] }>('/tracking/sessions?limit=10', {}, token).catch(() => ({ sessions: [] })) : { sessions: [] },
     userId ? apiFetch<any>(`/users/${userId}`, {}, token).catch(() => null) : null,
+    userId ? apiFetch<any>(`/users/${userId}/stats`, {}, token).catch(() => null) : null,
   ]);
   const posts = postsData?.posts ?? [];
   const routes = routesData?.routes ?? [];
   const sessions = sessionsData?.sessions ?? [];
+  const stats = statsData ?? null;
+  const currentYear = new Date().getFullYear();
 
   userName = userInfo?.name || 'Rider';
   const initials = userName.slice(0, 2).toUpperCase();
@@ -141,6 +144,51 @@ export default async function MePage() {
               </a>
             ))}
           </div>
+
+          {/* Season card */}
+          {stats && (stats.total_rides > 0 || stats.total_routes > 0) && (
+            <div className="mt-3 rounded-xl overflow-hidden relative"
+              style={{ background: 'linear-gradient(135deg, rgb(var(--accent) / 0.15) 0%, rgb(var(--rust) / 0.1) 100%)', border: '1px solid rgb(var(--accent) / 0.3)' }}>
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="font-display text-sm tracking-wider uppercase" style={{ color: 'rgb(var(--accent))' }}>
+                    Сезон {currentYear}
+                  </div>
+                  <div className="text-xs text-muted">Enduro World</div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <div className="font-display text-3xl leading-none" style={{ color: 'rgb(var(--accent))' }}>
+                      {stats.this_year_rides}
+                    </div>
+                    <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">поездок</div>
+                  </div>
+                  <div>
+                    <div className="font-display text-3xl leading-none" style={{ color: 'rgb(var(--accent))' }}>
+                      {stats.total_routes}
+                    </div>
+                    <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">маршрутов</div>
+                  </div>
+                  <div>
+                    <div className="font-display text-3xl leading-none" style={{ color: 'rgb(var(--accent))' }}>
+                      {stats.total_posts}
+                    </div>
+                    <div className="text-[10px] text-muted mt-1 uppercase tracking-wider">постов</div>
+                  </div>
+                </div>
+                {stats.top_regions && stats.top_regions.length > 0 && (
+                  <div className="mt-3 flex gap-1.5 flex-wrap">
+                    {stats.top_regions.map((r: string) => (
+                      <span key={r} className="text-[10px] font-bold px-2 py-0.5 rounded"
+                        style={{ background: 'rgb(var(--accent) / 0.15)', color: 'rgb(var(--accent))' }}>
+                        📍 {r}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <header className="hidden" />

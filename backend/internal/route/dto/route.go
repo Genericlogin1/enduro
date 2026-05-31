@@ -34,6 +34,7 @@ type ListRoutesFilter struct {
 	Country    *string
 	AuthorID   *uuid.UUID
 	Search     string
+	SortBy     string // "created_at" | "rating"
 	Limit      int
 	Offset     int
 }
@@ -49,6 +50,9 @@ type RouteResponse struct {
 	GeoJSON     json.RawMessage `json:"geojson"`
 	StartLat    float64         `json:"start_lat"`
 	StartLng    float64         `json:"start_lng"`
+	AvgRating   float64         `json:"avg_rating"`
+	RatingCount int             `json:"rating_count"`
+	MyRating    int             `json:"my_rating"`
 	CreatedAt   time.Time       `json:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at"`
 }
@@ -59,6 +63,7 @@ func ToRouteResponse(r *entity.Route) RouteResponse {
 		Description: r.Description, Difficulty: r.Difficulty,
 		Country: r.Country, DistanceKm: r.DistanceKm, GeoJSON: r.GeoJSON,
 		StartLat: r.StartLat, StartLng: r.StartLng,
+		AvgRating: r.AvgRating, RatingCount: r.RatingCount, MyRating: r.MyRating,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	}
 }

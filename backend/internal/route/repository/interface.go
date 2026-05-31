@@ -12,7 +12,9 @@ import (
 type RouteRepository interface {
 	Create(ctx context.Context, r *entity.Route) error
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Route, error)
+	GetByIDForUser(ctx context.Context, id, userID uuid.UUID) (*entity.Route, error)
 	List(ctx context.Context, filter dto.ListRoutesFilter) ([]*entity.Route, error)
 	Update(ctx context.Context, r *entity.Route) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	Rate(ctx context.Context, routeID, userID uuid.UUID, rating int) error
 }

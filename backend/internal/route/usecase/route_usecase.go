@@ -16,9 +16,11 @@ import (
 type RouteUsecase interface {
 	Create(ctx context.Context, authorID uuid.UUID, req dto.CreateRouteRequest) (dto.RouteResponse, error)
 	GetByID(ctx context.Context, id uuid.UUID) (dto.RouteResponse, error)
+	GetByIDForUser(ctx context.Context, id, userID uuid.UUID) (dto.RouteResponse, error)
 	List(ctx context.Context, filter dto.ListRoutesFilter) ([]dto.RouteResponse, error)
 	Update(ctx context.Context, id, callerID uuid.UUID, req dto.UpdateRouteRequest) (dto.RouteResponse, error)
 	Delete(ctx context.Context, id, callerID uuid.UUID) error
+	Rate(ctx context.Context, routeID, userID uuid.UUID, rating int) error
 }
 
 type routeUsecase struct {
@@ -117,6 +119,24 @@ func (u *routeUsecase) Update(ctx context.Context, id, callerID uuid.UUID, req d
 		return dto.RouteResponse{}, err
 	}
 	return dto.ToRouteResponse(r), nil
+}
+
+func (u *routeUsecase) GetByIDForUser(ctx context.Context, id, userID uuid.UUID) (dto.RouteResponse, error) {
+	r, err := u.repo.GetByIDForUser(ctx, id, userID)
+	if err != nil {
+		if apperrors.Is(err, apperrors.ErrNotFound) {
+			return dto.RouteResponse{}, entity.ErrNotFound
+		}
+		return dto.RouteResponse{}, err
+	}
+	return dto.ToRouteResponse(r), nil
+}
+
+func (u *routeUsecase) Rate(ctx context.Context, routeID, userID uuid.UUID, rating int) error {
+	if rating < 1 || rating > 5 {
+		return apperrors.New(apperrors.ErrInvalidInput, "INVALID_INPUT", "rating must be 1-5")
+	}
+	return u.repo.Rate(ctx, routeID, userID, rating)
 }
 
 func (u *routeUsecase) Delete(ctx context.Context, id, callerID uuid.UUID) error {

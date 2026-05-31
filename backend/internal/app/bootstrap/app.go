@@ -39,6 +39,8 @@ import (
 	reportusecase "enduro/internal/report/usecase"
 	activity "enduro/internal/activity"
 	activityhandler "enduro/internal/activity/handler"
+	stats "enduro/internal/stats"
+	statshandler "enduro/internal/stats/handler"
 	ridedomain "enduro/internal/ride"
 	ridehandler "enduro/internal/ride/handler"
 	riderepo "enduro/internal/ride/repository/postgres"
@@ -165,6 +167,9 @@ func Run(cfg *configs.Config, log *slog.Logger) error {
 	activityH := activityhandler.NewActivityHandler(pool)
 	activity.RegisterRoutes(v1, activityH)
 	ridedomain.RegisterRoutes(v1, rideH, jwtManager)
+
+	statsH := statshandler.NewStatsHandler(pool)
+	stats.RegisterRoutes(v1, statsH)
 
 	// ── Graceful shutdown ─────────────────────────────────────────────────────
 	quit := make(chan os.Signal, 1)
