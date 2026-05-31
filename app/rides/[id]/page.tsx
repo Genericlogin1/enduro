@@ -7,6 +7,26 @@ import { ru } from 'date-fns/locale';
 
 export const dynamic = 'force-dynamic';
 
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const ride = await apiFetch<any>(`/rides/${params.id}`).catch(() => null);
+  if (!ride) return { title: 'Покатушка не найдена' };
+  const date = ride.event_date
+    ? new Date(ride.event_date).toLocaleDateString('ru', { day: 'numeric', month: 'long' })
+    : '';
+  const title = `${ride.title} | Enduro World`;
+  const description = ride.description
+    ? `${ride.description.slice(0, 155)}`
+    : `Групповой выезд "${ride.title}"${date ? ` · ${date}` : ''}${ride.location ? ` · ${ride.location}` : ''}. Присоединяйся!`;
+  const url = `https://enduro-world.vercel.app/rides/${params.id}`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, url, siteName: 'Enduro World', type: 'article' },
+    twitter: { card: 'summary', title, description },
+    alternates: { canonical: url },
+  };
+}
+
 export default async function RidePage({ params }: { params: { id: string } }) {
   const token = await getServerToken();
 

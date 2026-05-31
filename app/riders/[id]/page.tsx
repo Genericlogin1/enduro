@@ -6,6 +6,30 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const user = await apiFetch<any>(`/users/${params.id}`).catch(() => null);
+  if (!user) return { title: 'Райдер не найден' };
+  const title = `${user.name} — эндуро райдер | Enduro World`;
+  const description = user.bio
+    ? `${user.bio.slice(0, 155)}`
+    : `Профиль райдера ${user.name} на Enduro World. Маршруты, отчёты, покатушки.`;
+  const url = `https://enduro-world.vercel.app/riders/${params.id}`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Enduro World',
+      type: 'profile',
+      images: user.avatar_url ? [{ url: user.avatar_url }] : [],
+    },
+    twitter: { card: 'summary', title, description },
+    alternates: { canonical: url },
+  };
+}
+
 export default async function RiderPage({ params }: { params: { id: string } }) {
   const token = await getServerToken();
   const { id } = params;

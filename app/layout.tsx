@@ -4,13 +4,25 @@ import SwRegister from '@/components/SwRegister';
 import Nav from '@/components/Nav';
 
 export const metadata: Metadata = {
-  title: 'Enduro World',
-  description: 'Global Enduro Community — share rides, plan routes, find tours.',
+  title: 'Enduro World — мотоэндуро сообщество',
+  description: 'Маршруты для эндуро, GPS-треки, групповые покатушки и туры. Находи маршруты, записывай треки, общайся с райдерами.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Enduro',
+  },
+  openGraph: {
+    title: 'Enduro World — мотоэндуро сообщество',
+    description: 'Маршруты для эндуро, GPS-треки, групповые покатушки и туры.',
+    url: 'https://enduro-world.vercel.app',
+    siteName: 'Enduro World',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Enduro World',
+    description: 'Маршруты для эндуро, GPS-треки, групповые покатушки и туры.',
   },
 };
 

@@ -9,11 +9,29 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const route = await apiFetch<any>(`/routes/${params.id}`).catch(() => null);
   if (!route) return { title: 'Маршрут не найден' };
-  const desc = [route.country, route.difficulty, route.distance_km ? `${route.distance_km} km` : null]
+  const desc = [route.country, route.difficulty, route.distance_km ? `${route.distance_km} км` : null]
     .filter(Boolean).join(' · ');
+  const title = `${route.name} | Enduro World`;
+  const description = route.description
+    ? `${route.description.slice(0, 155)}…`
+    : `Эндуро маршрут: ${route.name}. ${desc}`;
+  const url = `https://enduro-world.vercel.app/routes/${params.id}`;
   return {
-    title: `${route.name} | Enduro World`,
-    description: route.description || `Эндуро маршрут: ${route.name}. ${desc}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Enduro World',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
+    alternates: { canonical: url },
   };
 }
 
