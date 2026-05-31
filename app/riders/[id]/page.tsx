@@ -28,7 +28,7 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
 
   if (!user) {
     return (
-      <div className="min-h-screen pb-24">
+      <div className="min-h-screen pb-nav">
         <main className="max-w-xl mx-auto px-4 py-16 text-center">
           <div className="text-4xl mb-3">🏕️</div>
           <h2 className="font-display text-2xl text-ink">Rider not found</h2>
@@ -40,7 +40,7 @@ export default async function RiderPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="px-4 py-5 border-b border-line">
         <div className="max-w-xl mx-auto">
           <div className="flex items-start gap-4">

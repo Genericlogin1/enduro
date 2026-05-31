@@ -10,7 +10,7 @@ export default async function NewPostPage() {
   if (!token) redirect('/login');
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/95 backdrop-blur border-b border-line px-4 py-3">
         <div className="max-w-xl mx-auto">
           <h1 className="font-display text-2xl leading-none">New post</h1>

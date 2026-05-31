@@ -76,7 +76,13 @@ html:not(.light) body::after {
   );
 }
 
+/* Page root — grain/glow overlays sit behind page content */
 body > * { position: relative; z-index: 1; }
+
+/* Bottom nav safe area — accounts for iPhone home bar */
+.pb-nav {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
 
 /* ── Typography ──────────────────────────────── */
 .font-display {

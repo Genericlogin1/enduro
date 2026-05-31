@@ -20,7 +20,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
   );
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
         <div className="max-w-xl mx-auto px-4 py-3">
           <h1 className="font-display text-2xl leading-none mb-3">Поиск</h1>

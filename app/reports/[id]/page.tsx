@@ -28,7 +28,7 @@ export default async function ReportPage({ params }: { params: { id: string } })
   const hasPhotos = photos.length > 0;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       {/* Cover */}
       {report.cover_url && (
         <div className="relative h-72 bg-black">

@@ -18,7 +18,7 @@ export default async function ToursPage() {
   const tours = data?.tours ?? [];
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
         <div className="max-w-xl mx-auto px-4 py-3 flex items-end justify-between">
           <div>

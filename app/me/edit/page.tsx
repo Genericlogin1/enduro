@@ -23,7 +23,7 @@ export default async function EditProfilePage() {
   if (!user) redirect('/me');
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/95 backdrop-blur border-b border-line px-4 py-3">
         <div className="max-w-xl mx-auto flex items-center gap-3">
           <a href="/me" className="text-muted hover:text-ink text-sm">← Назад</a>

@@ -30,7 +30,7 @@ export default async function BusinessDashboard() {
   const totalRevenue = 0; // будущая интеграция с оплатой
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 border-b" style={{ background: 'rgb(var(--bg-base) / 0.9)', backdropFilter: 'blur(16px)', borderColor: 'rgb(var(--border) / 0.5)' }}>
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div>

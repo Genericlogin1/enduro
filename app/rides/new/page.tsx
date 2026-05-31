@@ -43,7 +43,7 @@ export default function NewRidePage() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
         <div className="max-w-xl mx-auto px-4 py-3.5 flex items-center gap-3">
           <button onClick={() => router.back()} className="text-muted hover:text-ink transition-colors">

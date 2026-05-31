@@ -28,7 +28,7 @@ export default async function TourPage({ params }: { params: { id: string } }) {
   const isFull = tour.spots_left === 0;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       {/* Cover */}
       {tour.cover_url && (
         <div className="relative h-64 bg-black">

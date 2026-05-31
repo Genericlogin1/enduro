@@ -9,7 +9,7 @@ export default async function NewTourPage() {
   const token = await getServerToken();
   if (!token) redirect('/login?next=/tours/new');
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/95 backdrop-blur border-b border-line px-4 py-3">
         <div className="max-w-2xl mx-auto">
           <h1 className="font-display text-2xl leading-none">Новый тур</h1>

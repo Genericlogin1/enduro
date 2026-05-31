@@ -33,7 +33,17 @@ export default function Nav({ active }: { active?: string }) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-20" style={{ background: 'rgb(var(--bg-base) / 0.94)', backdropFilter: 'blur(20px) saturate(160%)', borderTop: '1px solid rgb(var(--border) / 0.45)' }}>
+    <nav
+      className="fixed bottom-0 inset-x-0"
+      style={{
+        zIndex: 9999,
+        background: 'rgb(var(--bg-base) / 0.96)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        borderTop: '1px solid rgb(var(--border) / 0.5)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        WebkitTransform: 'translateZ(0)', // force GPU layer, ensures fixed works on iOS
+      }}
+    >
       <div className="max-w-xl mx-auto relative">
         {/* Theme toggle */}
         <div className="absolute right-3 -top-10">

@@ -12,7 +12,7 @@ export default async function RidesPage() {
   const rides = data?.rides ?? [];
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
         <div className="max-w-xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div>

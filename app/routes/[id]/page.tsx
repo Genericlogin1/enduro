@@ -40,7 +40,7 @@ export default async function RouteDetailPage({ params }: { params: { id: string
   };
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
       <header className="px-4 py-4 border-b border-line">

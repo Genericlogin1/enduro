@@ -33,7 +33,7 @@ export default async function RidePage({ params }: { params: { id: string } }) {
   const dateStr = format(date, "d MMMM yyyy, HH:mm", { locale: ru });
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
         <div className="max-w-xl mx-auto px-4 py-3.5 flex items-center gap-3">
           <Link href="/rides" className="text-muted hover:text-ink transition-colors">

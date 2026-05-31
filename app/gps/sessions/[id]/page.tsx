@@ -26,7 +26,7 @@ export default async function GpsSessionPage({ params }: { params: { id: string 
   });
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="px-4 py-3 border-b border-line">
         <div className="max-w-xl mx-auto">
           <div className="flex items-center gap-2 mb-1">

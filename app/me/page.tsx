@@ -15,7 +15,7 @@ export default async function MePage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen pb-24">
+      <div className="min-h-screen pb-nav">
         <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
           <div className="max-w-xl mx-auto px-4 py-3">
             <h1 className="font-display text-3xl leading-none text-ink">ME</h1>
@@ -71,7 +71,7 @@ export default async function MePage() {
   const durationLabel = totalHours > 0 ? `${totalHours}h ${remainingMins}m` : `${totalMinutes}m`;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       {/* Profile hero */}
       <div className="relative">
         <div className="h-24" style={{ background: 'linear-gradient(135deg, rgb(var(--accent) / 0.12) 0%, rgb(var(--accent) / 0.04) 50%, transparent 100%)' }} />

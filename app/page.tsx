@@ -326,7 +326,7 @@ export default async function FeedPage({
   ];
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-nav">
       <header className="sticky top-0 z-10 bg-base/90 backdrop-blur border-b border-line">
         <div className="max-w-xl mx-auto px-4 pt-3.5 pb-2.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
