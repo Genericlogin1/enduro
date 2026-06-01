@@ -546,8 +546,9 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
                   strokeColor: isActive ? activeColor : baseColor,
                   strokeWeight: isActive ? 5 : 3,
                   strokeOpacity: 0.85,
+                  clickable: !addingSpot,
                 }}
-                onClick={() => { setActive({ kind: 'route', data: r }); setTab('routes'); }}
+                onClick={() => { if (!addingSpot) { setActive({ kind: 'route', data: r }); setTab('routes'); } }}
               />
             );
           })}
@@ -572,8 +573,9 @@ export default function MapView({ apiKey, routes }: { apiKey: string; routes: Ro
                   strokeWeight: isActive ? 5 : 3,
                   strokeOpacity: isActive ? 1 : 0.7,
                   zIndex: isActive ? 10 : 1,
+                  clickable: !addingSpot,
                 }}
-                onClick={() => { setActive({ kind: 'gps', data: t }); setTab('gps'); }}
+                onClick={() => { if (!addingSpot) { setActive({ kind: 'gps', data: t }); setTab('gps'); } }}
               />
             );
           })}
